@@ -2,11 +2,10 @@ import axios from 'axios'
 import { login, logout, update } from '../contexts/Auth/AuthActions'
 
 const loginAuth = async (values, dispatch) => {
-   console.log(dispatch)
    try {
       const { data } = await axios.post('/api/auth/login', values)
       dispatch(login(data.user))
-      return data
+      return data.user
    } catch (error) {
       throw error
    }

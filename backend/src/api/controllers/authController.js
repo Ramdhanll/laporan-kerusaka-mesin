@@ -21,35 +21,45 @@ export const login = async (req, res) => {
 
    const { email, password } = req.body
 
-   const user = await Users.findOne({ email })
+   try {
+      const user = await Users.findOne({ email })
 
-   if (user) {
-      const token = generateToken({
-         _id: user._id,
-         name: user.name,
-         email: user.email,
-         photo: user.photo,
-         gender: user.gender,
-         role: user.role,
-      })
+      if (user) {
+         const token = generateToken({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            photo: user.photo,
+            gender: user.gender,
+            role: user.role,
+         })
 
-      if (bcrypt.compareSync(password, user.password)) {
-         return res
-            .status(200)
-            .cookie('token', token, { httpOnly: true })
-            .json({
-               _id: user._id,
-               name: user.name,
-               email: user.email,
-               photo: user.photo,
-               gender: user.gender,
-               role: user.role,
-               token,
-            })
+         if (bcrypt.compareSync(password, user.password)) {
+            return res
+               .status(200)
+               .cookie('token', token, { httpOnly: true })
+               .json({
+                  user: {
+                     _id: user._id,
+                     name: user.name,
+                     email: user.email,
+                     photo: user.photo,
+                     gender: user.gender,
+                     role: user.role,
+                     token,
+                  },
+               })
+         }
+
+         throw 'Email atau password salah'
       }
+   } catch (error) {
+      res.status(500).json({
+         status: 'error',
+         errors: [{ msg: error?.name === 'CastError' ? error.message : error }],
+         message: error,
+      })
    }
-
-   res.status(401).json({ message: 'Invalid email or password!' })
 }
 
 export const register = async (req, res) => {

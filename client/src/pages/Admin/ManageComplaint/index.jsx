@@ -23,7 +23,6 @@ import {
    useToast,
    UnorderedList,
    ListItem,
-   Image,
    Badge,
 } from '@chakra-ui/react'
 import { MdAdd, MdDelete, MdEdit } from 'react-icons/md'
@@ -243,52 +242,14 @@ const ManageComplaintt = () => {
       }
    }
 
-   const [photoFile, setPhotoFile] = useState(null)
-   const [photoPrev, setPhotoPrev] = useState('')
-
-   const handlePreviewPhoto = (e) => {
-      const file = e.target.files[0]
-      var t = file.type.split('/').pop().toLowerCase()
-      if (
-         t !== 'jpeg' &&
-         t !== 'jpg' &&
-         t !== 'png' &&
-         t !== 'bmp' &&
-         t !== 'gif'
-      ) {
-         toast({
-            title: 'Gagal',
-            description: 'Gunakan file photo',
-            status: 'error',
-            duration: 3000,
-            isClosable: true,
-            position: 'top-right',
-         })
-         return false
-      }
-      setPhotoFile(file)
-      let reader = new FileReader()
-      reader.onload = () => {
-         const src = reader.result
-         setPhotoPrev(src)
-      }
-
-      reader.readAsDataURL(file)
-   }
-
    // Complaint
-   const {
-      isOpen: isOpenDetailComplaint,
-      onOpen: onOpenDetailComplaint,
-      onClose: onCloseDetailComplaint,
-   } = useDisclosure()
+   // const {
+   //    isOpen: isOpenDetailComplaint,
+   //    onOpen: onOpenDetailComplaint,
+   //    onClose: onCloseDetailComplaint,
+   // } = useDisclosure()
 
-   const [photoComplaint, setPhotoComplaint] = useState('')
-
-   const handleOpenDetailComplaint = (photo) => {
-      setPhotoComplaint(photo)
-      onOpenDetailComplaint()
-   }
+   // const [photoComplaint, setPhotoComplaint] = useState('')
 
    const handleStatusChangeToIND = (status) => {
       switch (status) {
@@ -459,12 +420,7 @@ const ManageComplaintt = () => {
          </Box>
 
          {/* Modal add and edit */}
-         <Modal
-            isOpen={isOpen}
-            onClose={onClose}
-            size='lg'
-            onOverlayClick={() => setPhotoPrev('')}
-         >
+         <Modal isOpen={isOpen} onClose={onClose} size='lg'>
             <ModalOverlay />
             <ModalContent>
                <ModalHeader>{isAdd ? 'Tambah Data' : 'Ubah Data'}</ModalHeader>
@@ -557,7 +513,7 @@ const ManageComplaintt = () => {
          />
 
          {/* Detail Complaint */}
-         <Modal
+         {/* <Modal
             isOpen={isOpenDetailComplaint}
             onClose={onCloseDetailComplaint}
             size='2xl'
@@ -573,7 +529,7 @@ const ManageComplaintt = () => {
                   />
                </ModalBody>
             </ModalContent>
-         </Modal>
+         </Modal> */}
       </Box>
    )
 }

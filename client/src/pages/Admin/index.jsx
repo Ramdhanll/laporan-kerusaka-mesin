@@ -25,6 +25,7 @@ import ManageMachine from './ManageMachine'
 import { BsGearWideConnected } from 'react-icons/bs'
 import { GiNotebook } from 'react-icons/gi'
 import ManageComplaint from './ManageComplaint'
+import Profile from '../../components/Profile'
 
 const Admin = () => {
    const { isOpen, onClose, onOpen } = useDisclosure()
@@ -43,6 +44,8 @@ const Admin = () => {
          >
             <Switch>
                <Route path='/a' component={Dashboard} exact />
+               <Route path='/a/profile' component={Profile} exact />
+
                <Route path='/a/data-admin' component={ManageAdmin} exact />
                <Route
                   path='/a/data-kepala-bagian'

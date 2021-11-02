@@ -24,7 +24,8 @@ const Login = ({ history }) => {
 
    useEffect(() => {
       if (userState?.role) history.push(localStorage.getItem('root') || '/')
-   }, [userState?.role, history])
+      console.log('run', userState)
+   }, [userState, userState?.role, history])
 
    const validationSchema = Yup.object({
       email: Yup.string().required('Email diperlukan').email('Email invalid'),
@@ -53,6 +54,8 @@ const Login = ({ history }) => {
          }
 
          localStorage.setItem('root', root)
+         console.log('history', history)
+         console.log('root', root)
 
          history.push(root)
          toast({

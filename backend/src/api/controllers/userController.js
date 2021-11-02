@@ -76,7 +76,9 @@ export const updateUser = async (req, res) => {
       return res.status(400).json({ errors: errors.array() })
    }
 
-   const { name, email, password } = req.body
+   const { name, email, password, gender } = req.body
+
+   console.log(req.body)
    try {
       // validation email
       if (email) {
@@ -85,13 +87,19 @@ export const updateUser = async (req, res) => {
             if (emailExist._id.toString() !== req.params.id)
                throw 'Email sudah digunakan'
          }
+      } else {
+         throw 'Email tidak boleh kosong!'
       }
 
       const user = await Users.findById(req.params.id)
 
       user.name = name ?? user.name
       user.email = email ?? user.email
+      user.gender = gender ?? user.gender
       user.password = password ? bcrypt.hashSync(password, 8) : user.password
+
+      if (req.file)
+         user.photo = `${'http://localhost:5000'}/uploads/${req.file.filename}`
 
       const updatedUser = await user.save()
       res.status(200).json({

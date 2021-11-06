@@ -17,10 +17,26 @@ const complaintSchema = new mongoose.Schema(
          default: 'PENDING',
          enum: ['PENDING', 'ONGOING', 'SUCCESS', 'FAILED'],
       },
-      user: {
+      reporter: {
          type: ObjectId,
          ref: 'Users',
          required: true,
+      },
+      approved: {
+         type: String,
+         enum: ['approved', 'not_yet_approved', 'not_approved'],
+         default: 'not_yet_approved',
+      },
+      approved_by: {
+         type: ObjectId,
+         ref: 'Users',
+      },
+      mechanical: {
+         type: ObjectId,
+         ref: 'Users',
+      },
+      note_mechanical: {
+         type: String,
       },
    },
    {

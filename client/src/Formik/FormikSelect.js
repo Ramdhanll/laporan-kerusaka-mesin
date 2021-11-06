@@ -8,7 +8,15 @@ import {
 } from '@chakra-ui/react'
 
 function FormikSelect(props) {
-   const { label, name, options, placeholder, required, ...rest } = props
+   const {
+      label,
+      name,
+      options,
+      placeholder,
+      required,
+      disabled = false,
+      ...rest
+   } = props
    return (
       <Field name={name} {...rest}>
          {({ field, form }) => (
@@ -16,8 +24,13 @@ function FormikSelect(props) {
                isInvalid={form.errors[name] && form.touched[name]}
                isRequired={required}
             >
-               <FormLabel>{label}</FormLabel>
-               <Select placeholder={placeholder} {...field}>
+               <FormLabel {...rest}>{label}</FormLabel>
+               <Select
+                  placeholder={placeholder}
+                  {...field}
+                  disabled={disabled}
+                  {...rest}
+               >
                   {options.map((option) => {
                      return (
                         <option key={option.key} value={option.value}>

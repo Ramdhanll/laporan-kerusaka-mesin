@@ -20,12 +20,13 @@ import Navbar from '../../components/Navbar'
 import PageNotFound from '../PageNotFound'
 import ManageAdmin from './ManageAdmin'
 import ManageHeadOfDivision from './ManageHeadOfDivision'
-import ManageStaff from './ManageStaff'
 import ManageMachine from './ManageMachine'
 import { BsGearWideConnected } from 'react-icons/bs'
 import { GiNotebook } from 'react-icons/gi'
 import ManageComplaint from './ManageComplaint'
 import Profile from '../../components/Profile'
+import ManageStaffProduction from './ManageStaffProduction'
+import ManageStaffMechanical from './ManageStaffMechanical'
 
 const Admin = () => {
    const { isOpen, onClose, onOpen } = useDisclosure()
@@ -39,7 +40,7 @@ const Admin = () => {
          <Navbar sidebar={true} handleOpenSideabar={handleOpenSideabar} />
 
          <Box
-            px={['25px', '50px', '100px', '150px']}
+            px={['25px', '50px', '100px', '100px']}
             py={['25px', '25px', '25px', '50px']}
          >
             <Switch>
@@ -52,7 +53,16 @@ const Admin = () => {
                   component={ManageHeadOfDivision}
                   exact
                />
-               <Route path='/a/data-petugas' component={ManageStaff} exact />
+               <Route
+                  path='/a/data-staff-produksi'
+                  component={ManageStaffProduction}
+                  exact
+               />
+               <Route
+                  path='/a/data-staff-mekanik'
+                  component={ManageStaffMechanical}
+                  exact
+               />
                <Route path='/a/data-mesin' component={ManageMachine} exact />
                <Route
                   path='/a/data-pengaduan'
@@ -120,8 +130,9 @@ const Admin = () => {
                      </NavLink>
                      <NavLink
                         to={
-                           `${localStorage.getItem('root')}/data-petugas` ||
-                           '/a/data-petugas'
+                           `${localStorage.getItem(
+                              'root'
+                           )}/data-staff-produksi` || '/a/data-staff-produksi'
                         }
                         style={{ color: '#483434', fontWeight: 300 }}
                         activeStyle={{ color: '#F89820', fontWeight: 700 }}
@@ -129,7 +140,23 @@ const Admin = () => {
                         <HStack spacing={3} alignItems='center'>
                            <MdEngineering size='24px' />
                            <Text fontSize={['sm', 'md', 'lg', 'xl']}>
-                              Data Petugas
+                              Data Staff Produksi
+                           </Text>
+                        </HStack>
+                     </NavLink>
+                     <NavLink
+                        to={
+                           `${localStorage.getItem(
+                              'root'
+                           )}/data-staff-mekanik` || '/a/data-staff-mekanik'
+                        }
+                        style={{ color: '#483434', fontWeight: 300 }}
+                        activeStyle={{ color: '#F89820', fontWeight: 700 }}
+                     >
+                        <HStack spacing={3} alignItems='center'>
+                           <MdEngineering size='24px' />
+                           <Text fontSize={['sm', 'md', 'lg', 'xl']}>
+                              Data Staff Mekanik
                            </Text>
                         </HStack>
                      </NavLink>

@@ -24,7 +24,6 @@ const Login = ({ history }) => {
 
    useEffect(() => {
       if (userState?.role) history.push(localStorage.getItem('root') || '/')
-      console.log('run', userState)
    }, [userState, userState?.role, history])
 
    const validationSchema = Yup.object({
@@ -47,15 +46,18 @@ const Login = ({ history }) => {
             root = '/a'
          } else if (res.role === 'head_of_division') {
             role = 'Kepala Bagian'
-            root = '/t'
+            root = '/h'
+         } else if (res.role === 'production') {
+            role = 'Staff Produksi'
+            root = '/sp'
+         } else if (res.role === 'mechanical') {
+            role = 'Staff Mekanik'
+            root = '/sm'
          } else {
-            role = 'Staff'
-            root = '/s'
+            root = '/404'
          }
 
          localStorage.setItem('root', root)
-         console.log('history', history)
-         console.log('root', root)
 
          history.push(root)
          toast({
@@ -67,6 +69,7 @@ const Login = ({ history }) => {
             position: 'top-right',
          })
       } catch (error) {
+         console.log('error', error)
          actions.setSubmitting(false)
 
          const renderError = (

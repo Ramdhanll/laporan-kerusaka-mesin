@@ -36,8 +36,9 @@ import Pagination from '../../../components/Pagination'
 import AlertDialogComponent from '../../../components/AlertDialogComponent'
 import Search from '../../../components/Search'
 import { AuthContext } from '../../../contexts/Auth/AuthContext'
+import handleRoleChangeToIND from '../../../helpers/HandleRoleChangeToIND'
 
-const ManageStaff = () => {
+const ManageStaffProduction = () => {
    const toast = useToast()
    const { isOpen, onOpen, onClose } = useDisclosure()
    const { userState } = useContext(AuthContext)
@@ -51,7 +52,7 @@ const ManageStaff = () => {
    }, [searchValue])
 
    const { data } = useSWR(
-      `/api/users?page=${pageIndex}&role=staff&name=${searchValue}&email=${searchValue}`
+      `/api/users?page=${pageIndex}&role=production&name=${searchValue}&email=${searchValue}`
    )
 
    const handlePagination = (page) => {
@@ -78,16 +79,16 @@ const ManageStaff = () => {
       actions.setSubmitting(true)
       try {
          if (isAdd) {
-            await UserService.createUser({ ...values, role: 'staff' })
+            await UserService.createUser({ ...values, role: 'production' })
          } else {
             await UserService.updateUser(staffSelected._id, {
                ...values,
-               role: 'staff',
+               role: 'production',
             })
          }
          actions.setSubmitting(false)
          mutate(
-            `/api/users?page=${pageIndex}&role=staff&name=${searchValue}&email=${searchValue}`
+            `/api/users?page=${pageIndex}&role=production&name=${searchValue}&email=${searchValue}`
          )
          onClose()
          setStaffSelected({})
@@ -155,7 +156,7 @@ const ManageStaff = () => {
       try {
          await UserService.deleteUser(idDeleted)
          mutate(
-            `/api/users?page=${pageIndex}&role=staff&name=${searchValue}&email=${searchValue}`
+            `/api/users?page=${pageIndex}&role=production&name=${searchValue}&email=${searchValue}`
          )
          setIdDeleted(null)
          setIsLoadingAlert(false)
@@ -238,7 +239,7 @@ const ManageStaff = () => {
                fontSize={['md', 'lg', 'xl', '3xl']}
                color='text'
             >
-               Data Petugas
+               Data Staff Produksi
             </Text>
 
             <HStack>
@@ -296,7 +297,7 @@ const ManageStaff = () => {
                               <Td>{staff.name}</Td>
                               <Td>{staff.email}</Td>
                               <Td>{staff.gender}</Td>
-                              <Td>{staff.role}</Td>
+                              <Td>{handleRoleChangeToIND(staff?.role)}</Td>
                               <Td textAlign='right'>
                                  <HStack spacing={3} justifyContent='center'>
                                     <Button
@@ -416,7 +417,7 @@ const ManageStaff = () => {
          {/* Alert Delete */}
          <AlertDialogComponent
             header='Hapus staff'
-            body='Yakin ingin menghapus?'
+            body='Menghapus staff produksi dapat menghapus data yang ketergantungan, Yakin ingin menghapus?'
             isOpen={isOpenAlert}
             onClose={onCloseAlert}
             isLoading={isLoadingAlert}
@@ -427,4 +428,4 @@ const ManageStaff = () => {
    )
 }
 
-export default ManageStaff
+export default ManageStaffProduction

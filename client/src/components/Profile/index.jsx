@@ -27,8 +27,8 @@ import {
    UnorderedList,
 } from '@chakra-ui/react'
 import { AuthContext } from '../../contexts/Auth/AuthContext'
-import handleRoleChangeToIND from '../helpers/HandleRoleChangeToIND'
-import handleGenderChangeToIND from '../helpers/HandleGenderChangeToIND'
+import handleRoleChangeToIND from '../../helpers/HandleRoleChangeToIND'
+import handleGenderChangeToIND from '../../helpers/HandleGenderChangeToIND'
 import { MdEdit } from 'react-icons/md'
 import FormikControl from '../../Formik/FormikControl'
 import { Form, Formik } from 'formik'

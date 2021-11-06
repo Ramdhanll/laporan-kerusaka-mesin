@@ -4,10 +4,12 @@ const handleRoleChangeToIND = (role) => {
          return 'Admin'
       case 'head_of_division':
          return 'Kepala Bagian'
-      case 'staff':
-         return 'Petugas'
+      case 'production':
+         return 'Staff Produksi'
+      case 'mechanical':
+         return 'Staff Mekanik'
       default:
-         return 'Petugas'
+         return 'Role tidak ditemukan'
    }
 }
 

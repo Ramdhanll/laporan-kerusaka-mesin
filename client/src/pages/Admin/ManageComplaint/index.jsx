@@ -36,8 +36,10 @@ import useSWR, { mutate } from 'swr'
 import Pagination from '../../../components/Pagination'
 import AlertDialogComponent from '../../../components/AlertDialogComponent'
 import Search from '../../../components/Search'
+import handleApprovedChangeToIND from '../../../helpers/HandleApprovedChangeToIND'
+import ModalDetailComplaint from '../../../components/Complaints/ModalDetailComplaint'
 
-const ManageComplaintt = () => {
+const ManageComplaint = () => {
    const toast = useToast()
    const { isOpen, onOpen, onClose } = useDisclosure()
 
@@ -52,7 +54,7 @@ const ManageComplaintt = () => {
    }, [searchValue])
 
    const { data } = useSWR(
-      `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&author=${searchValue}`
+      `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}`
    )
 
    const { data: dataMachines } = useSWR(`/api/machines`)
@@ -104,7 +106,7 @@ const ManageComplaintt = () => {
          }
          actions.setSubmitting(false)
          mutate(
-            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&author=${searchValue}`
+            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}`
          )
          onClose()
          setComplaintSelected({})
@@ -169,7 +171,7 @@ const ManageComplaintt = () => {
       try {
          await ComplaintService.deleteComplaint(idDeleted)
          mutate(
-            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&author=${searchValue}`
+            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}`
          )
          setIdDeleted(null)
          setIsLoadingAlert(false)
@@ -283,6 +285,19 @@ const ManageComplaintt = () => {
       }
    }
 
+   // SECTION DETAIL MODAL COMPLAINT
+   const {
+      isOpen: isOpenModalDetailComplaint,
+      onOpen: onOpenModalDetailComplaint,
+      onClose: onCloseModalDetailComplaint,
+   } = useDisclosure()
+
+   const [selectedComplaint, setSelectedComplaint] = useState({})
+   const handleOpenModalDetailComplaint = (complaint) => {
+      setSelectedComplaint(complaint)
+      onOpenModalDetailComplaint()
+   }
+
    return (
       <Box
       // px={['25px', '50px', '100px', '150px']}
@@ -340,6 +355,8 @@ const ManageComplaintt = () => {
                      <Th>Waktu</Th>
                      <Th>Status Perbaikan</Th>
                      <Th>Pelapor</Th>
+                     <Th>Disetujui</Th>
+                     <Th>Disetujui Oleh</Th>
                      <Th textAlign='center'>Action</Th>
                   </Tr>
                </Thead>
@@ -364,9 +381,25 @@ const ManageComplaintt = () => {
                               )}
                            </Td>
                            <Td>{handleStatusChangeToIND(complaint.status)}</Td>
-                           <Td>{complaint.user.name}</Td>
+                           <Td>{complaint.reporter?.name}</Td>
+                           <Td>
+                              {handleApprovedChangeToIND(complaint?.approved)}
+                           </Td>
+                           <Td>{complaint.approved_by?.name ?? '-'}</Td>
+
                            <Td textAlign='right'>
                               <HStack spacing={3} justifyContent='center'>
+                                 <Button
+                                    variant='solid'
+                                    colorScheme='blue'
+                                    size='sm'
+                                    _focus={{ outline: 'none' }}
+                                    onClick={() =>
+                                       handleOpenModalDetailComplaint(complaint)
+                                    }
+                                 >
+                                    Detail
+                                 </Button>
                                  <Button
                                     variant='solid'
                                     colorScheme='blue'
@@ -399,7 +432,7 @@ const ManageComplaintt = () => {
                   ) : (
                      <Tr>
                         <Td
-                           colSpan='7'
+                           colSpan='9'
                            bg='yellow.300'
                            color='text'
                            textAlign='center'
@@ -530,8 +563,14 @@ const ManageComplaintt = () => {
                </ModalBody>
             </ModalContent>
          </Modal> */}
+
+         <ModalDetailComplaint
+            isOpen={isOpenModalDetailComplaint}
+            onClose={onCloseModalDetailComplaint}
+            complaint={selectedComplaint}
+         />
       </Box>
    )
 }
 
-export default ManageComplaintt
+export default ManageComplaint

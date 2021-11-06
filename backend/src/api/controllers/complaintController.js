@@ -9,26 +9,33 @@ import Machines from '../models/machinesModel.js'
 import Users from '../models/usersModel.js'
 const __dirname = path.resolve()
 
+import { pdfWarrant } from '../helpers/pdfService.js'
+import handleStatusChangeToIND from '../helpers/handleStatusChangeToIND.js'
+import handleApprovedChangeToIND from '../helpers/handleApprovedChangeToIND.js'
+
 export const getComplaints = async (req, res) => {
    const pageSize = 10
    const page = Number(req.query.page) || 1
    const complaint = req.query.complaint || ''
    const code = req.query.code || ''
-   const author = req.query.author || ''
+   const reporter = req.query.reporter || ''
+   const approved = req.query.approved || ''
+
+   const approvedFilter = approved ? { approved } : {}
 
    const complaintFilter = complaint
       ? { complaint: { $regex: complaint, $options: 'i' } }
       : {}
 
-   // find user by author
+   // find reporter by reporter
    const users = await Users.find({
-      name: { $regex: author, $options: 'i' },
+      name: { $regex: reporter, $options: 'i' },
    }).select('_id')
 
    const getIdsUsers = users.map((user) => user._id)
    const filterIdsUsers = getIdsUsers.length
-      ? { user: getIdsUsers }
-      : { user: null }
+      ? [{ reporter: getIdsUsers }, { approved_by: getIdsUsers }]
+      : [{ reporter: null }, { approved_by: null }]
 
    // find machine by code
    const machines = await Machines.find({
@@ -42,15 +49,36 @@ export const getComplaints = async (req, res) => {
 
    try {
       const count = await Complaints.countDocuments({
-         $or: [filterIdsMachine, complaintFilter, filterIdsUsers],
+         $and: [
+            approvedFilter,
+            { $or: [filterIdsMachine, complaintFilter, ...filterIdsUsers] },
+         ],
+
+         // $or: [
+         //    filterIdsMachine,
+         //    complaintFilter,
+         //    filterIdsUsers,
+         // ],
       })
 
       const complaints = await Complaints.find({
-         $or: [filterIdsMachine, complaintFilter, filterIdsUsers],
+         $and: [
+            approvedFilter,
+            { $or: [filterIdsMachine, complaintFilter, ...filterIdsUsers] },
+         ],
+
+         // $or: [
+         //    filterIdsMachine,
+         //    complaintFilter,
+         //    filterIdsUsers,
+         //    approvedFilter,
+         // ],
       })
          .select('-password')
          .populate('machine')
-         .populate('user', '-password')
+         .populate('reporter', '-password')
+         .populate('approved_by', '-password')
+         .populate('mechanical', '-password')
          .sort('-createdAt')
          .skip(pageSize * (page - 1))
          .limit(pageSize)
@@ -79,7 +107,7 @@ export const createComplaint = async (req, res) => {
 
       const dataComplaint = {
          ...req.body,
-         user: req.user._id,
+         reporter: req.user._id,
          status: 'PENDING',
       }
 
@@ -109,7 +137,15 @@ export const updateComplaint = async (req, res) => {
       return res.status(400).json({ errors: errors.array() })
    }
 
-   const { machine, complaint, status } = req.body
+   const {
+      machine,
+      complaint,
+      status,
+      approved,
+      approved_by,
+      mechanical,
+      note_mechanical,
+   } = req.body
 
    try {
       if (!machine) throw 'Mesin diperlukan'
@@ -120,6 +156,11 @@ export const updateComplaint = async (req, res) => {
       getComplaint.complaint = complaint ?? getComplaint.complaint
       getComplaint.machine = machine ?? getComplaint.machine
       getComplaint.status = status ?? getComplaint.status
+      getComplaint.approved = approved ?? getComplaint.approved
+      getComplaint.approved_by = approved_by ?? getComplaint.approved_by
+      getComplaint.mechanical = mechanical ?? getComplaint.mechanical
+      getComplaint.note_mechanical =
+         note_mechanical ?? getComplaint.note_mechanical
 
       const updatedComplaint = await getComplaint.save()
 
@@ -155,29 +196,16 @@ export const deleteComplaint = async (req, res) => {
    }
 }
 
-const handleStatusChangeToIND = (status) => {
-   switch (status) {
-      case 'PENDING':
-         return 'Belum Diperbaiki'
-      case 'ONGOING':
-         return 'Sedang Diperbaiki'
-      case 'SUCCESS':
-         return 'Berhasil Diperbaiki'
-      case 'FAILED':
-         return 'Tidak Berhasil Diperbaiki'
-
-      default:
-         return 'Belum Diperbaiki'
-   }
-}
-
 export const sheet = async (req, res) => {
    // Definisikan data
    const data = []
 
    const complaints = await Complaints.find()
       .populate('machine')
-      .populate('user')
+      .populate('reporter')
+      .populate('mechanical')
+      .populate('approved_by')
+      .sort('machine.name')
 
    complaints.forEach((complaint, i) => {
       const filter = {
@@ -190,11 +218,13 @@ export const sheet = async (req, res) => {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
          }),
          STATUS: handleStatusChangeToIND(complaint.status),
-         AUTHOR: complaint.user.name,
+         PELAPOR: complaint.reporter.name,
+         APPROVED: handleApprovedChangeToIND(complaint.approved),
+         'DISETUJUI OLEH': complaint.approved_by.name,
+         MEKANIK: complaint.mechanical ? complaint.mechanical.name : '-',
+         'CATATAN MEKANIK': complaint.note_mechanical,
       }
 
       data.push(filter)
@@ -254,6 +284,33 @@ export const test = async (req, res) => {
       }).populate('machine')
 
       res.status(200).json({ status: 'success', complaints })
+   } catch (error) {
+      res.status(500).json({
+         status: 'error',
+         errors: [{ msg: error?.name === 'CastError' ? error.message : error }],
+         message: error,
+      })
+   }
+}
+
+// Surat perintah
+export const warrant = async (req, res) => {
+   try {
+      const complaint = await Complaints.findById(req.params.id)
+         .populate('machine')
+         .populate('reporter', '-password')
+         .populate('approved_by', '-password')
+         .populate('mechanical', '-password')
+
+      pdfWarrant(
+         complaint,
+         (chunk) => stream.write(chunk),
+         () => stream.end()
+      )
+      const stream = res.writeHead(200, {
+         'Content-Type': 'application/pdf',
+         'Content-Disposition': 'attachment;filename=surat-perintah.pdf',
+      })
    } catch (error) {
       res.status(500).json({
          status: 'error',

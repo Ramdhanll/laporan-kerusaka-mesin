@@ -6,6 +6,7 @@ import {
    sheet,
    test,
    updateComplaint,
+   warrant,
 } from '../controllers/complaintController.js'
 import { body } from 'express-validator'
 import { isAdmin, isAuth } from '../middleware/jwt.js'
@@ -26,10 +27,12 @@ complaintRouter.put(
    isAuth,
    updateComplaint
 )
-complaintRouter.delete('/:id', isAuth, isAdmin, deleteComplaint)
+complaintRouter.delete('/:id', isAuth, deleteComplaint)
 
 complaintRouter.get('/sheet', sheet)
 
 complaintRouter.get('/test', test)
+
+complaintRouter.get('/:id/warrant', warrant)
 
 export default complaintRouter

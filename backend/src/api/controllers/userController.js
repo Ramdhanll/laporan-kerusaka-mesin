@@ -1,5 +1,6 @@
 import { validationResult } from 'express-validator'
 import Users from '../models/usersModel.js'
+import Complaints from '../models/complaintsModel.js'
 import bcrypt from 'bcrypt'
 
 import XLSX from 'xlsx'
@@ -78,7 +79,6 @@ export const updateUser = async (req, res) => {
 
    const { name, email, password, gender } = req.body
 
-   console.log(req.body)
    try {
       // validation email
       if (email) {
@@ -119,6 +119,17 @@ export const updateUser = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
    try {
+      const complaints = await Complaints.find({
+         $or: [
+            { reporter: req.params.id },
+            { approved_by: req.params.id },
+            { mechanical: req.params.id },
+         ],
+      })
+
+      const getIdsComplaints = complaints.map((complaint) => complaint._id)
+      await Complaints.deleteMany({ _id: getIdsComplaints })
+
       await Users.deleteOne({ _id: req.params.id })
 
       res.status(200).json({
@@ -126,6 +137,7 @@ export const deleteUser = async (req, res) => {
          message: 'User has been deleted',
       })
    } catch (error) {
+      console.log(error)
       res.status(500).json({
          status: 'error',
          errors: [{ msg: error?.name === 'CastError' ? error.message : error }],
@@ -153,8 +165,10 @@ export const sheet = async (req, res) => {
          ROLE:
             user.role === 'head_of_division'
                ? 'Kepala Bagian'
-               : user.role === 'staff'
-               ? 'Petugas'
+               : user.role === 'production'
+               ? 'Staff Produksi'
+               : user.role === 'mechanical'
+               ? 'Staff Mekanik'
                : 'Admin',
       }
 
@@ -187,7 +201,6 @@ export const sheet = async (req, res) => {
       XLSX.writeFile(wb, `${downloadFolder}${path.sep}${fileName}.xls`)
       res.download(`${downloadFolder}${path.sep}${fileName}.xls`)
    } catch (e) {
-      console.log(e.message)
       throw e
    }
 }

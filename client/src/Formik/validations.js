@@ -1,5 +1,4 @@
 export const validatePassword = (value) => {
-   console.log('asd', value)
    let error
    if (!value) {
       error = 'Password diperlukan!'

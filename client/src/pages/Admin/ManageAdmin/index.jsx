@@ -416,7 +416,7 @@ const ManageAdmin = () => {
          {/* Alert Delete */}
          <AlertDialogComponent
             header='Hapus admin'
-            body='Yakin ingin menghapus?'
+            body='Menghapus admin dapat menghapus data yang ketergantungan, Yakin ingin menghapus?'
             isOpen={isOpenAlert}
             onClose={onCloseAlert}
             isLoading={isLoadingAlert}

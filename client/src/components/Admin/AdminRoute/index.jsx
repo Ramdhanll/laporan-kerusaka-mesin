@@ -4,6 +4,7 @@ import { AuthContext } from '../../../contexts/Auth/AuthContext'
 
 const AdminRoute = ({ component: Component, ...rest }) => {
    const { userState } = useContext(AuthContext)
+
    useEffect(() => {
       localStorage.setItem('urlCurrent', rest.location.pathname)
    }, [rest.location.pathname])
@@ -14,8 +15,9 @@ const AdminRoute = ({ component: Component, ...rest }) => {
          render={(props) =>
             userState?.role === 'admin' ? (
                <Component {...props} />
-            ) : userState?.role === 'student' ||
-              userState?.role === 'teacher' ? (
+            ) : userState?.role === 'production' ||
+              userState?.role === 'mechanical' ||
+              userState?.role === 'head_of_division' ? (
                <Redirect to={localStorage.getItem('root') || '/'} />
             ) : (
                <Redirect to='/login' />

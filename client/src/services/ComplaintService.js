@@ -29,6 +29,15 @@ const updateComplaint = async (id, values, dispatch) => {
    }
 }
 
+const approvedComplaint = async (id, values) => {
+   try {
+      const { data } = await axios.put(`/api/complaints/${id}`, values)
+      return data
+   } catch (error) {
+      throw error
+   }
+}
+
 const updateProfile = async (id, values, dispatch) => {
    try {
       const { data } = await axios.put(`/api/complaints/${id}`, values)
@@ -55,12 +64,30 @@ const sheet = async () => {
    }
 }
 
+const warrant = async (id) => {
+   try {
+      const { data } = await axios.get(`/api/complaints/${id}/warrant`, {
+         responseType: 'arraybuffer',
+      })
+      var blob = new Blob([data], {
+         type: 'application/pdf',
+      })
+      fileSaver.saveAs(blob, 'surat-perintah.pdf')
+
+      return data
+   } catch (error) {
+      throw error
+   }
+}
+
 const ComplaintService = {
    createComplaint,
    deleteComplaint,
    updateComplaint,
+   approvedComplaint,
    updateProfile,
    sheet,
+   warrant,
 }
 
 export default ComplaintService

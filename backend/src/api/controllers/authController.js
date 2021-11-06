@@ -51,7 +51,9 @@ export const login = async (req, res) => {
                })
          }
 
-         throw 'Email atau password salah'
+         throw 'Password salah'
+      } else {
+         throw 'Email belum terdaftar'
       }
    } catch (error) {
       res.status(500).json({

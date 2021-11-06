@@ -19,11 +19,7 @@ function FormikTextArea(props) {
                // h='110px'
                h={h}
             >
-               {label && (
-                  <FormLabel color='text' fontSize={['sm', 'md', 'lg']}>
-                     {label}
-                  </FormLabel>
-               )}
+               {label && <FormLabel color='text'>{label}</FormLabel>}
 
                <Textarea {...field} {...rest} />
                <FormErrorMessage mt='10px' color='red'>

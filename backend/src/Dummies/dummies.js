@@ -23,8 +23,16 @@ export const usersDummy = [
       name: 'Abidin',
       gender: 'L',
       photo: 'https://bit.ly/ryan-florence',
-      email: 'staff@gmail.com',
+      email: 'production@gmail.com',
       password: bcrypt.hashSync('password', salt),
-      role: 'staff',
+      role: 'production',
+   },
+   {
+      name: 'Juwaris',
+      gender: 'L',
+      photo: 'https://bit.ly/ryan-florence',
+      email: 'mechanical@gmail.com',
+      password: bcrypt.hashSync('password', salt),
+      role: 'mechanical',
    },
 ]

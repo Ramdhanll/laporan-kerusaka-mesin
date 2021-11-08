@@ -20,6 +20,7 @@ export const getComplaints = async (req, res) => {
    const code = req.query.code || ''
    const reporter = req.query.reporter || ''
    const approved = req.query.approved || ''
+   const code_complaint = req.query.code_complaint || ''
 
    const approvedFilter = approved ? { approved } : {}
 
@@ -27,15 +28,21 @@ export const getComplaints = async (req, res) => {
       ? { complaint: { $regex: complaint, $options: 'i' } }
       : {}
 
+   const codeComplaintFilter = code_complaint
+      ? { code_complaint: { $regex: code_complaint, $options: 'i' } }
+      : {}
+
    // find reporter by reporter
+
    const users = await Users.find({
       name: { $regex: reporter, $options: 'i' },
    }).select('_id')
 
    const getIdsUsers = users.map((user) => user._id)
+
    const filterIdsUsers = getIdsUsers.length
       ? [{ reporter: getIdsUsers }, { approved_by: getIdsUsers }]
-      : [{ reporter: null }, { approved_by: null }]
+      : [{ reporter: [] }, { reporter: [] }]
 
    // find machine by code
    const machines = await Machines.find({
@@ -51,7 +58,15 @@ export const getComplaints = async (req, res) => {
       const count = await Complaints.countDocuments({
          $and: [
             approvedFilter,
-            { $or: [filterIdsMachine, complaintFilter, ...filterIdsUsers] },
+            {
+               $or: [
+                  filterIdsMachine,
+                  complaintFilter,
+                  codeComplaintFilter,
+                  filterIdsUsers[0],
+                  filterIdsUsers[1],
+               ],
+            },
          ],
 
          // $or: [
@@ -64,7 +79,15 @@ export const getComplaints = async (req, res) => {
       const complaints = await Complaints.find({
          $and: [
             approvedFilter,
-            { $or: [filterIdsMachine, complaintFilter, ...filterIdsUsers] },
+            {
+               $or: [
+                  filterIdsMachine,
+                  complaintFilter,
+                  codeComplaintFilter,
+                  filterIdsUsers[0],
+                  filterIdsUsers[1],
+               ],
+            },
          ],
 
          // $or: [
@@ -107,6 +130,7 @@ export const createComplaint = async (req, res) => {
 
       const dataComplaint = {
          ...req.body,
+         code_complaint: createIdComplaint(),
          reporter: req.user._id,
          status: 'PENDING',
       }
@@ -318,4 +342,14 @@ export const warrant = async (req, res) => {
          message: error,
       })
    }
+}
+
+const createIdComplaint = () => {
+   const date = new Date()
+   const day = date.getDate()
+   const month = date.getMonth() + 1
+   const year = date.getFullYear()
+   const randomMath = Math.floor(Math.random() * (999 - 100 + 1) + 100)
+
+   return `${day}${month}${year}${randomMath}`
 }

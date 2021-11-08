@@ -61,7 +61,7 @@ const ManageComplaintt = () => {
    }, [searchValue])
 
    const { data } = useSWR(
-      `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}`
+      `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&code_complaint=${searchValue}`
    )
 
    const { data: dataMachines } = useSWR(`/api/machines`)
@@ -115,7 +115,7 @@ const ManageComplaintt = () => {
          }
          actions.setSubmitting(false)
          mutate(
-            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}`
+            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&code_complaint=${searchValue}`
          )
          onClose()
          setComplaintSelected({})
@@ -180,7 +180,7 @@ const ManageComplaintt = () => {
       try {
          await ComplaintService.deleteComplaint(idDeleted)
          mutate(
-            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}`
+            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&code_complaint=${searchValue}`
          )
          setIdDeleted(null)
          setIsLoadingAlert(false)
@@ -324,6 +324,7 @@ const ManageComplaintt = () => {
                <Thead>
                   <Tr>
                      <Th>No</Th>
+                     <Th>Kode Pengaduan</Th>
                      <Th>Mesin</Th>
                      <Th>Pengaduan</Th>
                      <Th>Waktu</Th>
@@ -339,6 +340,7 @@ const ManageComplaintt = () => {
                      data?.complaints.map((complaint, i) => (
                         <Tr key={i}>
                            <Td>{i + 1}</Td>
+                           <Td>{complaint.code_complaint}</Td>
                            <Td>{complaint.machine.code}</Td>
                            <Td>{complaint.complaint}</Td>
                            <Td>
@@ -361,9 +363,17 @@ const ManageComplaintt = () => {
                            <Td>
                               {handleApprovedChangeToIND(complaint?.approved)}
                            </Td>
-                           <Td>{`(${handleRoleChangeToIND(
-                              complaint.approved_by.role
-                           )}) ${complaint.approved_by.name}`}</Td>
+                           <Td>
+                              {/* {complaint.approved_by?.length
+                                 ? `(${handleRoleChangeToIND(
+                                      complaint.approved_by?.role
+                                   )}) ${complaint.approved_by?.name}`
+                                 : '-'}{' '} */}
+
+                              {complaint?.approved_by
+                                 ? complaint?.approved_by?.name
+                                 : '-'}
+                           </Td>
 
                            <Td textAlign='right'>
                               <HStack spacing={3} justifyContent='center'>
@@ -380,7 +390,7 @@ const ManageComplaintt = () => {
                                  </Button>
                                  <Button
                                     variant='solid'
-                                    colorScheme='blue'
+                                    colorScheme='yellow'
                                     size='sm'
                                     _focus={{ outline: 'none' }}
                                     onClick={() =>
@@ -435,7 +445,7 @@ const ManageComplaintt = () => {
                   ) : (
                      <Tr>
                         <Td
-                           colSpan='8'
+                           colSpan='9'
                            bg='yellow.300'
                            color='text'
                            textAlign='center'

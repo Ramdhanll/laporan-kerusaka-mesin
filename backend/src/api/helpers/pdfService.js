@@ -22,8 +22,13 @@ export const pdfWarrant = (data, dataCallback, endCallback) => {
    doc.moveDown()
 
    doc.fontSize(14).text('SURAT PERINTAH', { align: 'center', underline: true })
+   doc.fontSize(10).text(`KODE PENGADUAN : ${data?.code_complaint}`, {
+      align: 'center',
+   })
 
    doc.moveDown()
+   doc.moveDown()
+
    doc.moveDown()
 
    // Kepala Bagian

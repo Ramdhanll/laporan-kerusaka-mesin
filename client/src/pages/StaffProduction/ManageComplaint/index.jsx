@@ -56,7 +56,7 @@ const ManageComplaintt = () => {
    }, [searchValue])
 
    const { data } = useSWR(
-      `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}`
+      `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&code_complaint=${searchValue}`
    )
 
    const { data: dataMachines } = useSWR(`/api/machines`)
@@ -108,7 +108,7 @@ const ManageComplaintt = () => {
          }
          actions.setSubmitting(false)
          mutate(
-            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}`
+            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&code_complaint=${searchValue}`
          )
          onClose()
          setComplaintSelected({})
@@ -173,7 +173,7 @@ const ManageComplaintt = () => {
       try {
          await ComplaintService.deleteComplaint(idDeleted)
          mutate(
-            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}`
+            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&code_complaint=${searchValue}`
          )
          setIdDeleted(null)
          setIsLoadingAlert(false)
@@ -352,13 +352,13 @@ const ManageComplaintt = () => {
                <Thead>
                   <Tr>
                      <Th>No</Th>
+                     <Th>Kode Pengaduan</Th>
                      <Th>Mesin</Th>
-                     <Th>Pengaduan</Th>
+                     {/* <Th>Pengaduan</Th> */}
                      <Th>Waktu</Th>
                      <Th>Status Perbaikan</Th>
                      <Th>Pelapor</Th>
                      <Th>Disetujui</Th>
-                     <Th>Disetujui Oleh</Th>
                      <Th textAlign='center'>Action</Th>
                   </Tr>
                </Thead>
@@ -367,8 +367,9 @@ const ManageComplaintt = () => {
                      data?.complaints.map((complaint, i) => (
                         <Tr key={i}>
                            <Td>{i + 1}</Td>
+                           <Td>{complaint.code_complaint}</Td>
                            <Td>{complaint.machine.code}</Td>
-                           <Td>{complaint.complaint}</Td>
+                           {/* <Td>{complaint.complaint}</Td> */}
                            <Td>
                               {new Date(complaint.createdAt).toLocaleDateString(
                                  'id',
@@ -377,8 +378,6 @@ const ManageComplaintt = () => {
                                     year: 'numeric',
                                     month: 'long',
                                     day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit',
                                  }
                               )}
                            </Td>
@@ -387,7 +386,6 @@ const ManageComplaintt = () => {
                            <Td>
                               {handleApprovedChangeToIND(complaint?.approved)}
                            </Td>
-                           <Td>{complaint.approved_by?.name ?? '-'}</Td>
 
                            <Td textAlign='right'>
                               <HStack spacing={2} justifyContent='center'>

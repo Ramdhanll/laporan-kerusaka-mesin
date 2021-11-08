@@ -7,6 +7,10 @@ const complaintSchema = new mongoose.Schema(
          ref: 'Machines',
          required: true,
       },
+      code_complaint: {
+         type: String,
+         required: true,
+      },
       complaint: {
          type: String,
          required: true,

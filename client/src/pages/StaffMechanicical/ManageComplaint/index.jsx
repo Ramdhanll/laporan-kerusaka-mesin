@@ -59,7 +59,7 @@ const ManageComplaint = () => {
    }, [searchValue])
 
    const { data } = useSWR(
-      `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&approved=approved`
+      `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&approved=approved&code_complaint=${searchValue}`
    )
 
    const { data: dataMachines } = useSWR(`/api/machines`)
@@ -111,7 +111,7 @@ const ManageComplaint = () => {
          }
          actions.setSubmitting(false)
          mutate(
-            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&approved=approved`
+            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&approved=approved&code_complaint=${searchValue}`
          )
          onClose()
          setComplaintSelected({})
@@ -176,7 +176,7 @@ const ManageComplaint = () => {
       try {
          await ComplaintService.deleteComplaint(idDeleted)
          mutate(
-            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&approved=approved`
+            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&approved=approved&code_complaint=${searchValue}`
          )
          setIdDeleted(null)
          setIsLoadingAlert(false)
@@ -294,7 +294,7 @@ const ManageComplaint = () => {
          setBtnWorkon(false)
 
          mutate(
-            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&approved=approved`
+            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&approved=approved&code_complaint=${searchValue}`
          )
          onClose()
          toast({
@@ -370,7 +370,7 @@ const ManageComplaint = () => {
                Data Pengaduan
             </Text>
 
-            <HStack>
+            {/* <HStack>
                <Button
                   variant='solid'
                   bg='green'
@@ -387,7 +387,7 @@ const ManageComplaint = () => {
                >
                   <MdAdd size='24px' />
                </Button>
-            </HStack>
+            </HStack> */}
          </Flex>
 
          <Box mt='20px'>
@@ -407,6 +407,7 @@ const ManageComplaint = () => {
                <Thead>
                   <Tr>
                      <Th>No</Th>
+                     <Th>Kode Pengaduan</Th>
                      <Th>Mesin</Th>
                      <Th>Pengaduan</Th>
                      <Th>Waktu</Th>
@@ -422,6 +423,7 @@ const ManageComplaint = () => {
                      data?.complaints.map((complaint, i) => (
                         <Tr key={i}>
                            <Td>{i + 1}</Td>
+                           <Td>{complaint.code_complaint}</Td>
                            <Td>{complaint.machine.code}</Td>
                            <Td>{complaint.complaint}</Td>
                            <Td>
@@ -438,17 +440,10 @@ const ManageComplaint = () => {
                               )}
                            </Td>
                            <Td>{handleStatusChangeToIND(complaint.status)}</Td>
-                           {/* <Td>{`(${handleRoleChangeToIND(
-                              complaint.reporter.role
-                           )}) ${complaint.reporter.name}`}</Td>
+
                            <Td>
-                              {handleApprovedChangeToIND(complaint?.approved)}
-                           </Td> */}
-                           <Td>
-                              {complaint.mechanical
-                                 ? `(${handleRoleChangeToIND(
-                                      complaint.mechanical.role
-                                   )}) ${complaint.mechanical.name}`
+                              {complaint?.mechanical
+                                 ? complaint?.mechanical?.name
                                  : '-'}
                            </Td>
 
@@ -473,7 +468,6 @@ const ManageComplaint = () => {
                                        size='sm'
                                        _focus={{ outline: 'none' }}
                                        onClick={() => handleWorkon(complaint)}
-                                       isLoading={btnWorkon}
                                     >
                                        Kerjakan
                                     </Button>
@@ -484,7 +478,7 @@ const ManageComplaint = () => {
                                     <>
                                        <Button
                                           variant='solid'
-                                          colorScheme='blue'
+                                          colorScheme='yellow'
                                           size='sm'
                                           _focus={{ outline: 'none' }}
                                           onClick={() =>
@@ -611,7 +605,7 @@ const ManageComplaint = () => {
                                     {
                                        key: 1,
                                        value: 'ONGOING',
-                                       name: 'Sedang Diproses',
+                                       name: 'Sedang Diperbaiki',
                                     },
                                     {
                                        key: 2,

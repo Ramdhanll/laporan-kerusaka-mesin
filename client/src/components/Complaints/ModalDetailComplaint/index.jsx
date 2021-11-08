@@ -68,6 +68,12 @@ const ModalDetailComplaint = ({ complaint, isOpen, onClose }) => {
                      <Table variant='simple'>
                         <Tbody>
                            <Tr>
+                              <Th color='text'>Kode Pengaduan</Th>
+                              <Td color='gray.500'>
+                                 {complaint?.code_complaint}
+                              </Td>
+                           </Tr>
+                           <Tr>
                               <Th color='text'>Pelapor</Th>
                               <Td color='gray.500'>
                                  {complaint?.reporter?.name}

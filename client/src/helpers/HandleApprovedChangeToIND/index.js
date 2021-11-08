@@ -1,4 +1,4 @@
-import { Badge, Box, Center } from '@chakra-ui/layout'
+import { Center } from '@chakra-ui/layout'
 import { Tooltip } from '@chakra-ui/tooltip'
 import {
    IoIosCheckmarkCircle,

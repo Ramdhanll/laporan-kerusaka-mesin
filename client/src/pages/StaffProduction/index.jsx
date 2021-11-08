@@ -14,14 +14,14 @@ import {
 import React from 'react'
 import { Switch, Route, NavLink } from 'react-router-dom'
 import Dashboard from './Dashboard'
-import { MdDashboard, MdEngineering, MdPerson } from 'react-icons/md'
-import { RiStaffFill } from 'react-icons/ri'
+import { MdDashboard } from 'react-icons/md'
+import { RiFolderHistoryFill } from 'react-icons/ri'
 import Navbar from '../../components/Navbar'
 import PageNotFound from '../PageNotFound'
-import { BsGearWideConnected } from 'react-icons/bs'
 import { GiNotebook } from 'react-icons/gi'
 import Profile from '../../components/Profile'
 import ManageComplaintt from './ManageComplaint'
+import HistoryMaintenance from '../../components/HistoryMaintenance'
 
 const StaffProduction = () => {
    const { isOpen, onClose, onOpen } = useDisclosure()
@@ -45,6 +45,12 @@ const StaffProduction = () => {
                <Route
                   path='/sp/data-pengaduan'
                   component={ManageComplaintt}
+                  exact
+               />
+
+               <Route
+                  path='/sp/riwayat-perbaikan'
+                  component={HistoryMaintenance}
                   exact
                />
 
@@ -91,6 +97,22 @@ const StaffProduction = () => {
                            <GiNotebook size='24px' />
                            <Text fontSize={['sm', 'md', 'lg', 'xl']}>
                               Data Pengaduan
+                           </Text>
+                        </HStack>
+                     </NavLink>
+                     <NavLink
+                        to={
+                           `${localStorage.getItem(
+                              'root'
+                           )}/riwayat-perbaikan` || '/a/riwayat-perbaikan'
+                        }
+                        style={{ color: '#483434', fontWeight: 300 }}
+                        activeStyle={{ color: '#F89820', fontWeight: 700 }}
+                     >
+                        <HStack spacing={3} alignItems='center'>
+                           <RiFolderHistoryFill size='24px' />
+                           <Text fontSize={['sm', 'md', 'lg', 'xl']}>
+                              Riwayat Perbaikan
                            </Text>
                         </HStack>
                      </NavLink>

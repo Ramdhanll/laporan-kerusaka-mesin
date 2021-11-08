@@ -30,6 +30,8 @@ const usersSchema = new mongoose.Schema(
          default: 'production',
          enum: ['admin', 'head_of_division', 'production', 'mechanical'],
       },
+      resetToken: String,
+      expireToken: Date,
    },
    {
       timestamps: true,

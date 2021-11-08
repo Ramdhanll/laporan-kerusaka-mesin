@@ -1,9 +1,21 @@
 import { usersDummy } from '../..//Dummies/dummies.js'
 import Users from '../models/usersModel.js'
 import bcrypt from 'bcrypt'
+import crypto from 'crypto'
 import { generateToken } from '../helpers/jwt.js'
 import { validationResult } from 'express-validator'
 import e from 'express'
+import nodemailer from 'nodemailer'
+import dotenv from 'dotenv'
+dotenv.config()
+
+const transporter = nodemailer.createTransport({
+   service: 'gmail',
+   auth: {
+      user: 'binaalamlestari7@gmail.com',
+      pass: '@lukypujianto1',
+   },
+})
 
 export const seed = async (req, res) => {
    await Users.deleteMany({})
@@ -123,32 +135,87 @@ export const userDetail = async (req, res) => {
    }
 }
 
-/**
- * Upload image from client to cloudinary
- * 
- * import cloudinary from '../helpers/cloudinary.js'
-   import streamifier from 'streamifier'
-   
- *   if (req.file) {
-         streamifier.createReadStream(req.file.buffer).pipe(
-            cloudinary.uploader.upload_stream(
-               {
-                  folder: 'Hilman App',
-               },
-               async function (error, result) {
-                  if (error)
-                     return res
-                        .status(404)
-                        .json({ message: 'error upload photo' })
-                  user.photo = result.url
+export const resetPassword = async (req, res) => {
+   try {
+      crypto.randomBytes(32, async (err, buffer) => {
+         if (err) throw 'Failed to reset password'
+         const token = buffer.toString('hex')
 
-                  const updatedUser = await user.save()
-                  res.status(200).json({
-                     message: 'User updated successfully!',
-                     data: { user: updatedUser },
+         // user
+         const user = await Users.findOne({ email: req.body.email })
+
+         if (user) {
+            user.resetToken = token
+            user.expireToken = Date.now() + 3600000 // waktu sekarang ditambah 3600000 ms = 1 jam
+            await user.save()
+
+            transporter
+               .sendMail({
+                  from: 'binaalamlestari7@gmail.com',
+                  to: user.email,
+                  subject: 'Reset Password',
+                  html: `
+                  <p>Request untuk reset password</p>
+                  <h4>klik link ini <a href="http://localhost:3000/reset-password/${token}">link</a> untuk melakukan reset password</h4>
+               `,
+               })
+               .then((e) => {
+                  return res
+                     .status(200)
+                     .json({ status: 'success', message: 'Cek email anda!' })
+               })
+               .catch((e) => {
+                  console.log(e)
+                  return res.status(500).json({
+                     status: 'failed',
+                     data: e,
+                     message: 'Pesan gagal dikirim',
                   })
-               }
-            )
-         )
-      } 
- */
+               })
+         } else {
+            return res.status(404).json({
+               status: 'error',
+               message: 'User tidak ditemukan!f',
+            })
+         }
+      })
+   } catch (error) {
+      console.log(error)
+      return res.status(500).json({
+         status: 'error',
+         errors: [{ msg: error?.name === 'CastError' ? error.message : error }],
+         message: error,
+      })
+   }
+}
+
+export const newPassword = async (req, res) => {
+   const { token, password } = req.body
+   try {
+      // user
+      const user = await Users.findOne({ resetToken: token })
+      if (user) {
+         user.password = bcrypt.hashSync(password, 8)
+         user.resetToken = undefined
+         user.expireToken = undefined
+         user.save()
+      }
+
+      if (!user) {
+         return res.status(404).json({
+            status: 'error',
+            message: 'Invalid token!',
+         })
+      }
+
+      return res
+         .status(200)
+         .json({ status: 'success', message: 'Password berhasil diubah!' })
+   } catch (error) {
+      res.status(500).json({
+         status: 'error',
+         errors: [{ msg: error?.name === 'CastError' ? error.message : error }],
+         message: error,
+      })
+   }
+}

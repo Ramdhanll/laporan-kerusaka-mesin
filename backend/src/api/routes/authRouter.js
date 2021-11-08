@@ -5,7 +5,9 @@ import Users from '../models/usersModel.js'
 import {
    login,
    logout,
+   newPassword,
    register,
+   resetPassword,
    seed,
    status,
    userDetail,
@@ -41,5 +43,8 @@ authRouter.post(
 )
 
 authRouter.post('/logout', isAuth, logout)
+
+authRouter.post('/reset-password', resetPassword)
+authRouter.post('/new-password', newPassword)
 
 export default authRouter

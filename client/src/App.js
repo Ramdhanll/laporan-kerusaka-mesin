@@ -14,6 +14,8 @@ import StaffProduction from './pages/StaffProduction'
 import PageNotFound from './pages/PageNotFound'
 import StaffMechanicalRoute from './components/StaffMechanical/StaffMechanicalRoute'
 import StaffMechanical from './pages/StaffMechanicical'
+import ResetPassword from './pages/ResetPassword'
+import NewPassword from './pages/NewPassword'
 
 function App() {
    const { userState, userDispatch } = useContext(AuthContext)
@@ -51,6 +53,8 @@ function App() {
             <Switch>
                <Route path='/' component={LandingPage} exact />
                <Route path='/login' component={Login} />
+               <Route path='/reset-password' component={ResetPassword} exact />
+               <Route path='/reset-password/:token' component={NewPassword} />
 
                <AdminRoute path='/a' component={Admin} />
                <StaffProductionRoute path='/sp' component={StaffProduction} />

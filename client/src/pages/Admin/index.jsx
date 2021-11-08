@@ -15,7 +15,7 @@ import React from 'react'
 import { Switch, Route, NavLink } from 'react-router-dom'
 import Dashboard from './Dashboard'
 import { MdDashboard, MdEngineering, MdPerson } from 'react-icons/md'
-import { RiAdminFill } from 'react-icons/ri'
+import { RiAdminFill, RiFolderHistoryFill } from 'react-icons/ri'
 import Navbar from '../../components/Navbar'
 import PageNotFound from '../PageNotFound'
 import ManageAdmin from './ManageAdmin'
@@ -27,6 +27,7 @@ import ManageComplaint from './ManageComplaint'
 import Profile from '../../components/Profile'
 import ManageStaffProduction from './ManageStaffProduction'
 import ManageStaffMechanical from './ManageStaffMechanical'
+import HistoryMaintenance from '../../components/HistoryMaintenance'
 
 const Admin = () => {
    const { isOpen, onClose, onOpen } = useDisclosure()
@@ -36,7 +37,7 @@ const Admin = () => {
    }
 
    return (
-      <Box bg='gray.50' h='100vh' textAlign='justify'>
+      <Box bg='gray.50' h='100%' textAlign='justify'>
          <Navbar sidebar={true} handleOpenSideabar={handleOpenSideabar} />
 
          <Box
@@ -67,6 +68,11 @@ const Admin = () => {
                <Route
                   path='/a/data-pengaduan'
                   component={ManageComplaint}
+                  exact
+               />
+               <Route
+                  path='/a/riwayat-perbaikan'
+                  component={HistoryMaintenance}
                   exact
                />
 
@@ -190,6 +196,22 @@ const Admin = () => {
                            <GiNotebook size='24px' />
                            <Text fontSize={['sm', 'md', 'lg', 'xl']}>
                               Data Pengaduan
+                           </Text>
+                        </HStack>
+                     </NavLink>
+                     <NavLink
+                        to={
+                           `${localStorage.getItem(
+                              'root'
+                           )}/riwayat-perbaikan` || '/a/riwayat-perbaikan'
+                        }
+                        style={{ color: '#483434', fontWeight: 300 }}
+                        activeStyle={{ color: '#F89820', fontWeight: 700 }}
+                     >
+                        <HStack spacing={3} alignItems='center'>
+                           <RiFolderHistoryFill size='24px' />
+                           <Text fontSize={['sm', 'md', 'lg', 'xl']}>
+                              Riwayat Perbaikan
                            </Text>
                         </HStack>
                      </NavLink>

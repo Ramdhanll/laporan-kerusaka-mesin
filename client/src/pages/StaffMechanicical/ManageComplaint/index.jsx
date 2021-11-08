@@ -26,8 +26,7 @@ import {
    ListItem,
    Badge,
 } from '@chakra-ui/react'
-import { MdAdd, MdDelete, MdEdit } from 'react-icons/md'
-import { SiMicrosoftexcel } from 'react-icons/si'
+import { MdEdit } from 'react-icons/md'
 import { ImFolderDownload } from 'react-icons/im'
 
 import { Formik, Form } from 'formik'
@@ -36,10 +35,7 @@ import FormikControl from '../../../Formik/FormikControl'
 import ComplaintService from '../../../services/ComplaintService'
 import useSWR, { mutate } from 'swr'
 import Pagination from '../../../components/Pagination'
-import AlertDialogComponent from '../../../components/AlertDialogComponent'
 import Search from '../../../components/Search'
-import handleApprovedChangeToIND from '../../../helpers/HandleApprovedChangeToIND'
-import handleRoleChangeToIND from '../../../helpers/HandleRoleChangeToIND'
 import { AuthContext } from '../../../contexts/Auth/AuthContext'
 import ModalDetailComplaint from '../../../components/Complaints/ModalDetailComplaint'
 
@@ -153,102 +149,6 @@ const ManageComplaint = () => {
       }
    }
 
-   // SECTION Delete
-   const {
-      isOpen: isOpenAlert,
-      onOpen: onOpenAlert,
-      onClose: onCloseAlert,
-   } = useDisclosure()
-   const [isLoadingAlert, setIsLoadingAlert] = useState(false)
-   const [idDeleted, setIdDeleted] = useState(null)
-
-   const handleOpenAlert = (id) => {
-      setIdDeleted(id)
-      onOpenAlert()
-   }
-
-   const handleCloseAlert = () => {
-      setIdDeleted(null)
-   }
-
-   const handleConfirmDelete = async () => {
-      setIsLoadingAlert(true)
-      try {
-         await ComplaintService.deleteComplaint(idDeleted)
-         mutate(
-            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&approved=approved&code_complaint=${searchValue}`
-         )
-         setIdDeleted(null)
-         setIsLoadingAlert(false)
-         onCloseAlert()
-         toast({
-            title: 'Berhasil',
-            description: 'berhasil hapus pengaduan',
-            status: 'success',
-            duration: 2000,
-            isClosable: true,
-            position: 'top-right',
-         })
-      } catch (error) {
-         const renderError = (
-            <UnorderedList>
-               {error?.response?.data?.errors?.length ? (
-                  error.response.data.errors.map((item, i) => (
-                     <ListItem key={i}>
-                        {Object.keys(item.msg).length
-                           ? item.msg
-                           : `Tidak berhasil hapus pengaduan`}
-                     </ListItem>
-                  ))
-               ) : (
-                  <ListItem>
-                     Tidak berhasil {isAdd ? 'membuat' : 'mengubah'} pengaduan
-                  </ListItem>
-               )}
-            </UnorderedList>
-         )
-         toast({
-            title: 'Tidak berhasil hapus pengaduan',
-            description: renderError,
-            status: 'error',
-            duration: 3000,
-            isClosable: true,
-            position: 'top-right',
-         })
-      }
-      setIsLoadingAlert(false)
-   }
-
-   const handleExportToExcel = async () => {
-      try {
-         await ComplaintService.sheet('complaint')
-      } catch (error) {
-         const renderError = (
-            <UnorderedList>
-               {error?.response?.data?.errors?.length ? (
-                  error.response.data.errors.map((item, i) => (
-                     <ListItem key={i}>
-                        {Object.keys(item.msg).length
-                           ? item.msg
-                           : `Tidak berhasil export data`}
-                     </ListItem>
-                  ))
-               ) : (
-                  <ListItem>Tidak berhasil export data</ListItem>
-               )}
-            </UnorderedList>
-         )
-         toast({
-            title: 'Tidak berhasil',
-            description: renderError,
-            status: 'error',
-            duration: 3000,
-            isClosable: true,
-            position: 'top-right',
-         })
-      }
-   }
-
    const handleStatusChangeToIND = (status) => {
       switch (status) {
          case 'PENDING':
@@ -281,17 +181,12 @@ const ManageComplaint = () => {
       }
    }
 
-   const [btnWorkon, setBtnWorkon] = useState(false)
-
    const handleWorkon = async (complaint) => {
-      setBtnWorkon(true)
       try {
          await ComplaintService.updateComplaint(complaint._id, {
             ...complaint,
             mechanical: userState?._id,
          })
-
-         setBtnWorkon(false)
 
          mutate(
             `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&approved=approved&code_complaint=${searchValue}`
@@ -299,15 +194,13 @@ const ManageComplaint = () => {
          onClose()
          toast({
             title: 'Berhasil',
-            description: `berhasil ${isAdd ? 'membuat' : 'mengubah'} pengaduan`,
+            description: `berhasil memilih`,
             status: 'success',
             duration: 3000,
             isClosable: true,
             position: 'top-right',
          })
       } catch (error) {
-         setBtnWorkon(false)
-
          const renderError = (
             <UnorderedList>
                {error?.response?.data?.errors?.length ? (
@@ -315,9 +208,7 @@ const ManageComplaint = () => {
                      <ListItem key={i}>
                         {Object.keys(item.msg).length
                            ? item.msg
-                           : `tidak berhasil ${
-                                isAdd ? 'membuat' : 'mengubah'
-                             } pengaduan`}
+                           : `tidak berhasil memilih`}
                      </ListItem>
                   ))
                ) : (
@@ -642,17 +533,6 @@ const ManageComplaint = () => {
                </ModalBody>
             </ModalContent>
          </Modal>
-
-         {/* Alert Delete */}
-         <AlertDialogComponent
-            header='Hapus complaint'
-            body='Yakin ingin menghapus?'
-            isOpen={isOpenAlert}
-            onClose={onCloseAlert}
-            isLoading={isLoadingAlert}
-            handleConfirm={handleConfirmDelete}
-            handleCloseAlert={handleCloseAlert}
-         />
 
          <ModalDetailComplaint
             isOpen={isOpenModalDetailComplaint}

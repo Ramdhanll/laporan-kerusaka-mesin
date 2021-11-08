@@ -1,7 +1,6 @@
 import { Box, Flex, Text } from '@chakra-ui/layout'
 import React, { useEffect, useState } from 'react'
 import { MdEngineering, MdPerson } from 'react-icons/md'
-import { RiAdminFill } from 'react-icons/ri'
 import { FcEngineering } from 'react-icons/fc'
 import { AiFillHourglass } from 'react-icons/ai'
 

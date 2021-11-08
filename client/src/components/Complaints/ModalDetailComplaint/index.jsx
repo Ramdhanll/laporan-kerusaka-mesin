@@ -1,4 +1,3 @@
-import { Button } from '@chakra-ui/button'
 import { Image } from '@chakra-ui/image'
 import { Box, Flex, Text, VStack } from '@chakra-ui/layout'
 import {

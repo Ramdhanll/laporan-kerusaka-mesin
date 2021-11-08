@@ -26,23 +26,25 @@ export const getComplaints = async (req, res) => {
 
    const complaintFilter = complaint
       ? { complaint: { $regex: complaint, $options: 'i' } }
-      : {}
+      : { complaint: null }
 
    const codeComplaintFilter = code_complaint
       ? { code_complaint: { $regex: code_complaint, $options: 'i' } }
-      : {}
+      : { code_complaint: null }
 
    // find reporter by reporter
 
-   const users = await Users.find({
-      name: { $regex: reporter, $options: 'i' },
-   }).select('_id')
+   const users = reporter
+      ? await Users.find({
+           name: { $regex: reporter, $options: 'i' },
+        }).select('_id')
+      : []
 
    const getIdsUsers = users.map((user) => user._id)
 
    const filterIdsUsers = getIdsUsers.length
       ? [{ reporter: getIdsUsers }, { approved_by: getIdsUsers }]
-      : [{ reporter: [] }, { reporter: [] }]
+      : [{ reporter: [] }, { approved_by: [] }]
 
    // find machine by code
    const machines = await Machines.find({
@@ -90,12 +92,7 @@ export const getComplaints = async (req, res) => {
             },
          ],
 
-         // $or: [
-         //    filterIdsMachine,
-         //    complaintFilter,
-         //    filterIdsUsers,
-         //    approvedFilter,
-         // ],
+         // $or: [filterIdsMachine],
       })
          .select('-password')
          .populate('machine')
@@ -229,7 +226,7 @@ export const sheet = async (req, res) => {
       .populate('reporter')
       .populate('mechanical')
       .populate('approved_by')
-      .sort('machine.name')
+      .sort('machine.code')
 
    complaints.forEach((complaint, i) => {
       const filter = {
@@ -246,7 +243,9 @@ export const sheet = async (req, res) => {
          STATUS: handleStatusChangeToIND(complaint.status),
          PELAPOR: complaint.reporter.name,
          APPROVED: handleApprovedChangeToIND(complaint.approved),
-         'DISETUJUI OLEH': complaint.approved_by.name,
+         'DISETUJUI OLEH': complaint.approved_by
+            ? complaint.approved_by.name
+            : '-',
          MEKANIK: complaint.mechanical ? complaint.mechanical.name : '-',
          'CATATAN MEKANIK': complaint.note_mechanical,
       }

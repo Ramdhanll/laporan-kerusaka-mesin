@@ -350,11 +350,11 @@ const ManageComplaint = () => {
                <Thead>
                   <Tr>
                      <Th>No</Th>
+                     <Th>Kode Pengaduan</Th>
                      <Th>Mesin</Th>
                      <Th>Pengaduan</Th>
                      <Th>Waktu</Th>
                      <Th>Status Perbaikan</Th>
-                     <Th>Pelapor</Th>
                      <Th>Disetujui</Th>
                      <Th>Disetujui Oleh</Th>
                      <Th textAlign='center'>Action</Th>
@@ -365,6 +365,7 @@ const ManageComplaint = () => {
                      data?.complaints.map((complaint, i) => (
                         <Tr key={i}>
                            <Td>{i + 1}</Td>
+                           <Td>{complaint.code_complaint}</Td>
                            <Td>{complaint.machine.code}</Td>
                            <Td>{complaint.complaint}</Td>
                            <Td>
@@ -381,7 +382,6 @@ const ManageComplaint = () => {
                               )}
                            </Td>
                            <Td>{handleStatusChangeToIND(complaint.status)}</Td>
-                           <Td>{complaint.reporter?.name}</Td>
                            <Td>
                               {handleApprovedChangeToIND(complaint?.approved)}
                            </Td>
@@ -402,7 +402,7 @@ const ManageComplaint = () => {
                                  </Button>
                                  <Button
                                     variant='solid'
-                                    colorScheme='blue'
+                                    colorScheme='yellow'
                                     size='sm'
                                     _focus={{ outline: 'none' }}
                                     onClick={() =>

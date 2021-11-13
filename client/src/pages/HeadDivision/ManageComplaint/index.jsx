@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react'
+import { Tooltip } from '@chakra-ui/react'
 import {
    HStack,
    Box,
@@ -26,7 +27,7 @@ import {
    Badge,
 } from '@chakra-ui/react'
 import { MdAdd, MdDelete, MdEdit } from 'react-icons/md'
-import { SiMicrosoftexcel } from 'react-icons/si'
+import { ImFolderDownload } from 'react-icons/im'
 
 import { Formik, Form } from 'formik'
 import * as Yup from 'yup'
@@ -34,13 +35,14 @@ import FormikControl from '../../../Formik/FormikControl'
 import ComplaintService from '../../../services/ComplaintService'
 import useSWR, { mutate } from 'swr'
 import Pagination from '../../../components/Pagination'
-import AlertDialogComponent from '../../../components/AlertDialogComponent'
 import Search from '../../../components/Search'
-import handleApprovedChangeToIND from '../../../helpers/HandleApprovedChangeToIND'
 import { AuthContext } from '../../../contexts/Auth/AuthContext'
 import ModalDetailComplaint from '../../../components/Complaints/ModalDetailComplaint'
+import handleApprovedChangeToIND from '../../../helpers/HandleApprovedChangeToIND'
+import AlertDialogComponent from '../../../components/AlertDialogComponent'
+import { SiMicrosoftexcel } from 'react-icons/si'
 
-const ManageComplaintt = () => {
+const ManageComplaint = () => {
    const { userState } = useContext(AuthContext)
    const toast = useToast()
    const { isOpen, onOpen, onClose } = useDisclosure()
@@ -99,12 +101,15 @@ const ManageComplaintt = () => {
       actions.setSubmitting(true)
       try {
          if (isAdd) {
-            await ComplaintService.createComplaint(values)
+            await ComplaintService.createComplaint({
+               machine: values.machine,
+               complaint: values.complaint,
+            })
          } else {
-            await ComplaintService.updateComplaint(
-               complaintSelected._id,
-               values
-            )
+            await ComplaintService.updateComplaint(complaintSelected._id, {
+               approved_by: userState?._id,
+               ...values,
+            })
          }
          actions.setSubmitting(false)
          mutate(
@@ -147,6 +152,132 @@ const ManageComplaintt = () => {
             isClosable: true,
             position: 'top-right',
          })
+      }
+   }
+
+   const handleStatusChangeToIND = (status) => {
+      switch (status) {
+         case 'PENDING':
+            return (
+               <Badge variant='solid' colorScheme='yellow'>
+                  Belum Diperbaiki
+               </Badge>
+            )
+         case 'ONGOING':
+            return (
+               <Badge variant='solid' colorScheme='blue'>
+                  Sedang Diperbaiki
+               </Badge>
+            )
+         case 'SUCCESS':
+            return (
+               <Badge variant='solid' colorScheme='green'>
+                  Berhasil Diperbaiki
+               </Badge>
+            )
+         case 'FAILED':
+            return (
+               <Badge variant='solid' colorScheme='red'>
+                  Tidak Berhasil Diperbaiki
+               </Badge>
+            )
+
+         default:
+            return <Badge>Belum Diperbaiki</Badge>
+      }
+   }
+
+   const handleWorkon = async (complaint) => {
+      try {
+         await ComplaintService.updateComplaint(complaint._id, {
+            ...complaint,
+            mechanical: userState?._id,
+         })
+
+         mutate(
+            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&code_complaint=${searchValue}`
+         )
+         onClose()
+         toast({
+            title: 'Berhasil',
+            description: `berhasil memilih`,
+            status: 'success',
+            duration: 3000,
+            isClosable: true,
+            position: 'top-right',
+         })
+      } catch (error) {
+         const renderError = (
+            <UnorderedList>
+               {error?.response?.data?.errors?.length ? (
+                  error.response.data.errors.map((item, i) => (
+                     <ListItem key={i}>
+                        {Object.keys(item.msg).length
+                           ? item.msg
+                           : `tidak berhasil memilih`}
+                     </ListItem>
+                  ))
+               ) : (
+                  <ListItem>{error.message}</ListItem>
+               )}
+            </UnorderedList>
+         )
+         toast({
+            title: 'Tidak Berhasil',
+            description: renderError,
+            status: 'error',
+            duration: 3000,
+            isClosable: true,
+            position: 'top-right',
+         })
+      }
+   }
+
+   // SECTION DETAIL MODAL COMPLAINT
+   const {
+      isOpen: isOpenModalDetailComplaint,
+      onOpen: onOpenModalDetailComplaint,
+      onClose: onCloseModalDetailComplaint,
+   } = useDisclosure()
+
+   const [selectedComplaint, setSelectedComplaint] = useState({})
+   const handleOpenModalDetailComplaint = (complaint) => {
+      setSelectedComplaint(complaint)
+      onOpenModalDetailComplaint()
+   }
+
+   // SECTION SURAT PERINTAH | WARANT
+
+   const handleGetWarrant = async (complaint) => {
+      if (!complaint?.approved_by) {
+         toast({
+            title: 'Tidak Berhasil',
+            description: 'Kepala bagian belum menyetujui',
+            status: 'error',
+            duration: 3000,
+            isClosable: true,
+            position: 'top-right',
+         })
+
+         return
+      }
+      if (!complaint?.mechanical) {
+         toast({
+            title: 'Tidak Berhasil',
+            description: 'Staff Mekanik masih kosong',
+            status: 'error',
+            duration: 3000,
+            isClosable: true,
+            position: 'top-right',
+         })
+
+         return
+      }
+
+      try {
+         await ComplaintService.warrant(complaint._id)
+      } catch (error) {
+         console.log('error', error)
       }
    }
 
@@ -246,71 +377,14 @@ const ManageComplaintt = () => {
       }
    }
 
-   // Complaint
-   // const {
-   //    isOpen: isOpenDetailComplaint,
-   //    onOpen: onOpenDetailComplaint,
-   //    onClose: onCloseDetailComplaint,
-   // } = useDisclosure()
-
-   // const [photoComplaint, setPhotoComplaint] = useState('')
-
-   const handleStatusChangeToIND = (status) => {
-      switch (status) {
-         case 'PENDING':
-            return (
-               <Badge variant='solid' colorScheme='yellow'>
-                  Belum Diperbaiki
-               </Badge>
-            )
-         case 'ONGOING':
-            return (
-               <Badge variant='solid' colorScheme='blue'>
-                  Sedang Diperbaiki
-               </Badge>
-            )
-         case 'SUCCESS':
-            return (
-               <Badge variant='solid' colorScheme='green'>
-                  Berhasil Diperbaiki
-               </Badge>
-            )
-         case 'FAILED':
-            return (
-               <Badge variant='solid' colorScheme='red'>
-                  Tidak Berhasil Diperbaiki
-               </Badge>
-            )
-
-         default:
-            return <Badge>Belum Diperbaiki</Badge>
-      }
-   }
-
-   // SECTION DETAIL MODAL COMPLAINT
-   const {
-      isOpen: isOpenModalDetailComplaint,
-      onOpen: onOpenModalDetailComplaint,
-      onClose: onCloseModalDetailComplaint,
-   } = useDisclosure()
-
-   const [selectedComplaint, setSelectedComplaint] = useState({})
-   const handleOpenModalDetailComplaint = (complaint) => {
-      setSelectedComplaint(complaint)
-      onOpenModalDetailComplaint()
-   }
-
    return (
-      <Box
-      // px={['25px', '50px', '100px', '150px']}
-      // py={['25px', '25px', '25px', '50px']}
-      // bg='#FDEBE2'
-      >
+      <Box>
          <Flex justifyContent='space-between' alignItems='center'>
             <Text
                fontWeight='600'
                fontSize={['md', 'lg', 'xl', '3xl']}
                color='text'
+               mb='20px'
             >
                Data Pengaduan
             </Text>
@@ -335,7 +409,7 @@ const ManageComplaintt = () => {
             </HStack>
          </Flex>
 
-         <Box mt='20px'>
+         <Box>
             <Search
                setQuerySearch={setSearchValue}
                size='sm'
@@ -346,7 +420,7 @@ const ManageComplaintt = () => {
                px='20px'
             />
          </Box>
-         <Box mt='20px' overflow='auto' h='50vh'>
+         <Box mt='20px' overflow='auto' h='55vh'>
             <Table variant='simple'>
                <TableCaption>CV. BINA ALAM LESTARI</TableCaption>
                <Thead>
@@ -354,11 +428,11 @@ const ManageComplaintt = () => {
                      <Th>No</Th>
                      <Th>Kode Pengaduan</Th>
                      <Th>Mesin</Th>
-                     {/* <Th>Pengaduan</Th> */}
+                     <Th>Pengaduan</Th>
                      <Th>Waktu</Th>
                      <Th>Status Perbaikan</Th>
-                     <Th>Pelapor</Th>
                      <Th>Disetujui</Th>
+                     <Th>Disetujui Oleh</Th>
                      <Th textAlign='center'>Action</Th>
                   </Tr>
                </Thead>
@@ -369,7 +443,7 @@ const ManageComplaintt = () => {
                            <Td>{i + 1}</Td>
                            <Td>{complaint.code_complaint}</Td>
                            <Td>{complaint.machine.code}</Td>
-                           {/* <Td>{complaint.complaint}</Td> */}
+                           <Td>{complaint.complaint}</Td>
                            <Td>
                               {new Date(complaint.createdAt).toLocaleDateString(
                                  'id',
@@ -378,17 +452,23 @@ const ManageComplaintt = () => {
                                     year: 'numeric',
                                     month: 'long',
                                     day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
                                  }
                               )}
                            </Td>
                            <Td>{handleStatusChangeToIND(complaint.status)}</Td>
-                           <Td>{complaint.reporter.name}</Td>
                            <Td>
                               {handleApprovedChangeToIND(complaint?.approved)}
                            </Td>
+                           <Td>
+                              {complaint?.approved_by
+                                 ? complaint?.approved_by?.name
+                                 : '-'}
+                           </Td>
 
                            <Td textAlign='right'>
-                              <HStack spacing={2} justifyContent='center'>
+                              <HStack spacing={3} justifyContent='center'>
                                  <Button
                                     variant='solid'
                                     colorScheme='blue'
@@ -400,37 +480,58 @@ const ManageComplaintt = () => {
                                  >
                                     Detail
                                  </Button>
-                                 {complaint?.reporter?._id ===
-                                    userState?._id && (
-                                    <>
-                                       <Button
-                                          variant='solid'
-                                          colorScheme='yellow'
-                                          size='sm'
-                                          _focus={{ outline: 'none' }}
-                                          onClick={() =>
-                                             handleModalOpen({
-                                                isAdd: false,
-                                                complaint,
-                                             })
-                                          }
-                                       >
-                                          <MdEdit size='18px' />
-                                       </Button>
 
+                                 <Button
+                                    variant='solid'
+                                    colorScheme='yellow'
+                                    size='sm'
+                                    _focus={{ outline: 'none' }}
+                                    onClick={() =>
+                                       handleModalOpen({
+                                          isAdd: false,
+                                          complaint,
+                                       })
+                                    }
+                                 >
+                                    <MdEdit size='18px' />
+                                 </Button>
+
+                                 {complaint?.approved === 'approved' && (
+                                    <Tooltip label='Download surat perintah'>
                                        <Button
-                                          variant='solid'
-                                          colorScheme='red'
+                                          variant='outline'
+                                          colorScheme='green'
                                           size='sm'
-                                          onClick={() =>
-                                             handleOpenAlert(complaint._id)
-                                          }
                                           _focus={{ outline: 'none' }}
+                                          onClick={() =>
+                                             handleGetWarrant(complaint)
+                                          }
                                        >
-                                          <MdDelete size='18px' />
+                                          <HStack
+                                             spacing={3}
+                                             alignItems='center'
+                                          >
+                                             <ImFolderDownload
+                                                size='24px'
+                                                color='green'
+                                             />
+                                             {/* <Text>Surat Perintah</Text> */}
+                                          </HStack>
                                        </Button>
-                                    </>
+                                    </Tooltip>
                                  )}
+
+                                 <Button
+                                    variant='solid'
+                                    colorScheme='red'
+                                    size='sm'
+                                    onClick={() =>
+                                       handleOpenAlert(complaint._id)
+                                    }
+                                    _focus={{ outline: 'none' }}
+                                 >
+                                    <MdDelete size='18px' />
+                                 </Button>
                               </HStack>
                            </Td>
                         </Tr>
@@ -469,6 +570,7 @@ const ManageComplaintt = () => {
                      initialValues={{
                         machine: complaintSelected?.machine?._id || '',
                         complaint: complaintSelected?.complaint || '',
+                        approved: complaintSelected?.approved || '',
                      }}
                      onSubmit={handleSubmitFormik}
                      validationSchema={validationSchema}
@@ -484,13 +586,41 @@ const ManageComplaintt = () => {
                                  color='text'
                                  options={optionsMachines}
                                  placeholder='Pilih mesin'
+                                 disabled={!isAdd}
                               />
                               <FormikControl
                                  control='textarea'
                                  name='complaint'
                                  label='Pengaduan'
                                  color='text'
+                                 disabled={!isAdd}
                               />
+                              {!isAdd && (
+                                 <FormikControl
+                                    control='select'
+                                    name='approved'
+                                    label='Disetujui'
+                                    placeholder='Konfirmasi laporan'
+                                    options={[
+                                       {
+                                          key: 0,
+                                          value: 'not_yet_approved',
+                                          name: 'Belum Disetujui',
+                                       },
+                                       {
+                                          key: 1,
+                                          value: 'approved',
+                                          name: 'Disetujui',
+                                       },
+                                       {
+                                          key: 2,
+                                          value: 'not_approved',
+                                          name: 'Tidak Disetujui',
+                                       },
+                                    ]}
+                                 />
+                              )}
+
                               <Button
                                  alignSelf='flex-end'
                                  variant='solid'
@@ -509,6 +639,12 @@ const ManageComplaintt = () => {
             </ModalContent>
          </Modal>
 
+         <ModalDetailComplaint
+            isOpen={isOpenModalDetailComplaint}
+            onClose={onCloseModalDetailComplaint}
+            complaint={selectedComplaint}
+         />
+
          {/* Alert Delete */}
          <AlertDialogComponent
             header='Hapus complaint'
@@ -519,33 +655,8 @@ const ManageComplaintt = () => {
             handleConfirm={handleConfirmDelete}
             handleCloseAlert={handleCloseAlert}
          />
-
-         {/* Detail Complaint */}
-         {/* <Modal
-            isOpen={isOpenDetailComplaint}
-            onClose={onCloseDetailComplaint}
-            size='2xl'
-         >
-            <ModalOverlay />
-            <ModalContent>
-               <ModalHeader>Detail</ModalHeader>
-               <ModalCloseButton _focus={{ outline: 'none' }} />
-               <ModalBody>
-                  <Image
-                     src={photoComplaint}
-                     fallbackSrc='https://via.placeholder.com/50'
-                  />
-               </ModalBody>
-            </ModalContent>
-         </Modal> */}
-
-         <ModalDetailComplaint
-            isOpen={isOpenModalDetailComplaint}
-            onClose={onCloseModalDetailComplaint}
-            complaint={selectedComplaint}
-         />
       </Box>
    )
 }
 
-export default ManageComplaintt
+export default ManageComplaint

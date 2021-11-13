@@ -20,8 +20,8 @@ import Navbar from '../../components/Navbar'
 import PageNotFound from '../PageNotFound'
 import Profile from '../../components/Profile'
 import HistoryMaintenance from '../../components/HistoryMaintenance'
-import ManageComplaintt from '../StaffProduction/ManageComplaint'
 import { GiNotebook } from 'react-icons/gi'
+import ManageComplaint from './ManageComplaint'
 
 const HeadDivision = () => {
    const { isOpen, onClose, onOpen } = useDisclosure()
@@ -35,7 +35,7 @@ const HeadDivision = () => {
          <Navbar sidebar={true} handleOpenSideabar={handleOpenSideabar} />
 
          <Box
-            px={['25px', '50px', '100px', '100px']}
+            px={['25px', '50px', '100px', '50px']}
             py={['25px', '25px', '25px', '50px']}
          >
             <Switch>
@@ -44,7 +44,7 @@ const HeadDivision = () => {
 
                <Route
                   path='/h/data-pengaduan'
-                  component={ManageComplaintt}
+                  component={ManageComplaint}
                   exact
                />
 

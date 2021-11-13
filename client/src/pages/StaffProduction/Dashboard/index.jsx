@@ -91,7 +91,7 @@ const DashboardStaff = () => {
                   badgeColorScheme='green'
                />
                <CardStatComplaint
-                  status='Tidak Diperbaiki'
+                  status='Gagal Diperbaiki'
                   total={FAILED?.length || 0}
                   badgeColorScheme='red'
                />

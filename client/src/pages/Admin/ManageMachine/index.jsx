@@ -355,7 +355,7 @@ const ManageMachine = () => {
                               <HStack spacing={3} justifyContent='center'>
                                  <Button
                                     variant='solid'
-                                    colorScheme='blue'
+                                    colorScheme='yellow'
                                     size='sm'
                                     _focus={{ outline: 'none' }}
                                     onClick={() =>

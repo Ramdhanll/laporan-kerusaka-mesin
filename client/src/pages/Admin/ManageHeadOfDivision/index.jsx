@@ -168,7 +168,7 @@ const ManageHeadOfDivision = () => {
          onCloseAlert()
          toast({
             title: 'Berhasil',
-            description: 'berhasil hapus head_of_division',
+            description: 'berhasil hapus kepala bagian',
             status: 'success',
             duration: 2000,
             isClosable: true,
@@ -182,7 +182,7 @@ const ManageHeadOfDivision = () => {
                      <ListItem key={i}>
                         {Object.keys(item.msg).length
                            ? item.msg
-                           : `Tidak berhasil hapus head_of_division`}
+                           : `Tidak berhasil hapus kepala bagian`}
                      </ListItem>
                   ))
                ) : (
@@ -191,7 +191,7 @@ const ManageHeadOfDivision = () => {
             </UnorderedList>
          )
          toast({
-            title: 'Tidak berhasil hapus head_of_division',
+            title: 'Tidak berhasil hapus kepala bagian',
             description: renderError,
             status: 'error',
             duration: 3000,

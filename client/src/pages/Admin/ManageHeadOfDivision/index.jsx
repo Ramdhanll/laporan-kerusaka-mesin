@@ -431,8 +431,8 @@ const ManageHeadOfDivision = () => {
 
          {/* Alert Delete */}
          <AlertDialogComponent
-            header='Hapus head_of_division'
-            body='Yakin ingin menghapus?'
+            header='Hapus Kepala Bagian'
+            body='Menghapus kepala bagian akan menghapus seluruh data yang ketergantungan dengan ID ini, Yakin ingin menghapus?'
             isOpen={isOpenAlert}
             onClose={onCloseAlert}
             isLoading={isLoadingAlert}

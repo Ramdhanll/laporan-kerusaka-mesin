@@ -417,7 +417,7 @@ const ManageStaffProduction = () => {
          {/* Alert Delete */}
          <AlertDialogComponent
             header='Hapus staff'
-            body='Menghapus staff produksi dapat menghapus data yang ketergantungan, Yakin ingin menghapus?'
+            body='Menghapus staff produksi akan menghapus seluruh data yang ketergantungan dengan ID ini, Yakin ingin menghapus?'
             isOpen={isOpenAlert}
             onClose={onCloseAlert}
             isLoading={isLoadingAlert}

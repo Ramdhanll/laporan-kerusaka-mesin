@@ -474,7 +474,7 @@ const ManageMachine = () => {
          {/* Alert Delete */}
          <AlertDialogComponent
             header='Hapus mesin'
-            body='Menghapus mesin akan menghapus seluruh data pengaduan, Yakin ingin menghapus?'
+            body='Menghapus mesin akan menghapus seluruh data yang ketergantungan dengan ID ini, Yakin ingin menghapus?'
             isOpen={isOpenAlert}
             onClose={onCloseAlert}
             isLoading={isLoadingAlert}

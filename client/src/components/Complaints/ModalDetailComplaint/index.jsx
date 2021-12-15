@@ -16,43 +16,59 @@ import handleStatusChangeToIND from '../../../helpers/HandleStatusChangeToIND'
 
 const ModalDetailComplaint = ({ complaint, isOpen, onClose }) => {
    return (
-      <Modal isOpen={isOpen} onClose={onClose} size='2xl'>
+      <Modal isOpen={isOpen} onClose={onClose} size='6xl'>
          <ModalOverlay />
          <ModalContent>
             <ModalHeader>{/* Detail Pengaduan */}</ModalHeader>
             <ModalCloseButton _focus={{ outline: 'none' }} />
             <ModalBody>
-               <Flex gridGap={5}>
+               <Flex gridGap={8}>
                   {/* Mesin */}
                   <VStack spacing={2} alignItems='start'>
-                     <Text
-                        color='text'
-                        fontWeight='600'
-                        fontSize={['md', 'lg', 'xl', '2xl']}
-                     >
-                        Detail Mesin
-                     </Text>
-                     <Image
-                        src={complaint?.machine?.photo}
-                        fallbackSrc='https://via.placeholder.com/150'
-                        w='300px'
-                     />
-                     <Table variant='simple'>
-                        <Tbody>
-                           <Tr>
-                              <Th color='text'>Kode</Th>
-                              <Td color='gray.500'>
-                                 {complaint?.machine?.code}
-                              </Td>
-                           </Tr>
-                           <Tr>
-                              <Th color='text'>Nama</Th>
-                              <Td color='gray.500'>
-                                 {complaint?.machine?.name}
-                              </Td>
-                           </Tr>
-                        </Tbody>
-                     </Table>
+                     <VStack spacing={2} alignItems='start'>
+                        <Text
+                           color='text'
+                           fontWeight='600'
+                           fontSize={['md', 'lg', 'xl']}
+                        >
+                           Detail Mesin
+                        </Text>
+                        <Image
+                           src={complaint?.machine?.photo}
+                           fallbackSrc='https://via.placeholder.com/150'
+                           w='300px'
+                        />
+                        <Table variant='simple'>
+                           <Tbody>
+                              <Tr>
+                                 <Th color='text'>Kode</Th>
+                                 <Td color='gray.500'>
+                                    {complaint?.machine?.code}
+                                 </Td>
+                              </Tr>
+                              <Tr>
+                                 <Th color='text'>Nama</Th>
+                                 <Td color='gray.500'>
+                                    {complaint?.machine?.name}
+                                 </Td>
+                              </Tr>
+                           </Tbody>
+                        </Table>
+                     </VStack>
+                     <VStack spacing={2} alignItems='start'>
+                        <Text
+                           color='text'
+                           fontWeight='600'
+                           fontSize={['md', 'lg', 'xl']}
+                        >
+                           Photo Kerusakan Mesin
+                        </Text>
+                        <Image
+                           src={complaint?.photo_damage_machine}
+                           fallbackSrc='https://via.placeholder.com/150'
+                           w='300px'
+                        />
+                     </VStack>
                   </VStack>
 
                   {/* Pengaduan */}
@@ -60,7 +76,7 @@ const ModalDetailComplaint = ({ complaint, isOpen, onClose }) => {
                      <Text
                         color='text'
                         fontWeight='600'
-                        fontSize={['md', 'lg', 'xl', '2xl']}
+                        fontSize={['md', 'lg', 'xl']}
                      >
                         Detail Pengaduan
                      </Text>
@@ -134,6 +150,23 @@ const ModalDetailComplaint = ({ complaint, isOpen, onClose }) => {
                         </Tbody>
                      </Table>
                   </VStack>
+                  {complaint?.photo_solve_machine && (
+                     <VStack spacing={2} alignItems='start'>
+                        <Text
+                           color='text'
+                           fontWeight='600'
+                           fontSize={['md', 'lg', 'xl']}
+                        >
+                           Photo Mesin Berhasil Diperbaiki
+                        </Text>
+                        <Image
+                           src={complaint?.photo_solve_machine}
+                           fallbackSrc='https://via.placeholder.com/150'
+                           w='300px'
+                           maxH='400px'
+                        />
+                     </VStack>
+                  )}
                </Flex>
             </ModalBody>
             <ModalFooter></ModalFooter>

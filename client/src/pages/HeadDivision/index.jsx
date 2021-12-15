@@ -16,12 +16,14 @@ import { Switch, Route, NavLink } from 'react-router-dom'
 import Dashboard from './Dashboard'
 import { MdDashboard } from 'react-icons/md'
 import { RiFolderHistoryFill } from 'react-icons/ri'
+import { BsGearWideConnected } from 'react-icons/bs'
 import Navbar from '../../components/Navbar'
 import PageNotFound from '../PageNotFound'
 import Profile from '../../components/Profile'
 import HistoryMaintenance from '../../components/HistoryMaintenance'
 import { GiNotebook } from 'react-icons/gi'
 import ManageComplaint from './ManageComplaint'
+import ManageMachine from './ManageMachine'
 
 const HeadDivision = () => {
    const { isOpen, onClose, onOpen } = useDisclosure()
@@ -54,6 +56,8 @@ const HeadDivision = () => {
                   exact
                />
 
+               <Route path='/h/data-mesin' component={ManageMachine} exact />
+
                <Route path='/h/*' component={PageNotFound} />
             </Switch>
          </Box>
@@ -81,7 +85,21 @@ const HeadDivision = () => {
                            </Text>
                         </HStack>
                      </NavLink>
-
+                     <NavLink
+                        to={
+                           `${localStorage.getItem('root')}/data-mesin` ||
+                           '/h/data-mesin'
+                        }
+                        style={{ color: '#483434', fontWeight: 300 }}
+                        activeStyle={{ color: '#F89820', fontWeight: 700 }}
+                     >
+                        <HStack spacing={3} alignItems='center'>
+                           <BsGearWideConnected size='24px' />
+                           <Text fontSize={['sm', 'md', 'lg', 'xl']}>
+                              Data Mesin
+                           </Text>
+                        </HStack>
+                     </NavLink>
                      <Text color='text' fontWeight='600'>
                         PENGADUAN
                      </Text>

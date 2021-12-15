@@ -42,6 +42,12 @@ const complaintSchema = new mongoose.Schema(
       note_mechanical: {
          type: String,
       },
+      photo_damage_machine: {
+         type: String,
+      },
+      photo_solve_machine: {
+         type: String,
+      },
    },
    {
       timestamps: true,

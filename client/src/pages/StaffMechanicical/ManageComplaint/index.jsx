@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { Tooltip } from '@chakra-ui/react'
+import { Image, Tooltip } from '@chakra-ui/react'
 import {
    HStack,
    Box,
@@ -94,15 +94,57 @@ const ManageComplaint = () => {
       machine: Yup.string().required('Mesin diperlukan'),
       complaint: Yup.string().required('Pengaduan diperlukan'),
    })
+
+   const [photoFile, setPhotoFile] = useState(null)
+   const [photoPrev, setPhotoPrev] = useState('')
+
+   const handlePreviewPhoto = (e) => {
+      const file = e.target.files[0]
+      var t = file.type.split('/').pop().toLowerCase()
+      if (
+         t !== 'jpeg' &&
+         t !== 'jpg' &&
+         t !== 'png' &&
+         t !== 'bmp' &&
+         t !== 'gif'
+      ) {
+         toast({
+            title: 'Gagal',
+            description: 'Gunakan file photo',
+            status: 'error',
+            duration: 3000,
+            isClosable: true,
+            position: 'top-right',
+         })
+         return false
+      }
+      setPhotoFile(file)
+      let reader = new FileReader()
+      reader.onload = () => {
+         const src = reader.result
+         setPhotoPrev(src)
+      }
+
+      reader.readAsDataURL(file)
+   }
+
    const handleSubmitFormik = async (values, actions) => {
       actions.setSubmitting(true)
       try {
+         const reqData = new FormData()
+
+         reqData.append('photo_solve_machine', photoFile)
+         reqData.append('machine', values.machine)
+         reqData.append('complaint', values.complaint)
+         reqData.append('status', values.status)
+         reqData.append('note_mechanical', values.note_mechanical)
+
          if (isAdd) {
-            await ComplaintService.createComplaint(values)
+            await ComplaintService.createComplaint(reqData)
          } else {
             await ComplaintService.updateComplaint(
                complaintSelected._id,
-               values
+               reqData
             )
          }
          actions.setSubmitting(false)
@@ -509,6 +551,23 @@ const ManageComplaint = () => {
                                        name: 'Tidak Berhasil Diperbaiki',
                                     },
                                  ]}
+                              />
+                              {photoPrev ||
+                                 (complaintSelected?.photo_solve_machine && (
+                                    <Image
+                                       src={
+                                          photoPrev ||
+                                          complaintSelected?.photo_solve_machine
+                                       }
+                                       fallbackSrc='https://via.placeholder.com/50'
+                                    />
+                                 ))}
+                              <FormikControl
+                                 control='photo'
+                                 name='photo_perbaikan'
+                                 label='Photo Hasil Perbaikan'
+                                 color='text'
+                                 onChange={handlePreviewPhoto}
                               />
                               <FormikControl
                                  control='textarea'

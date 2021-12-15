@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
    HStack,
    Box,
@@ -23,7 +23,6 @@ import {
    useToast,
    UnorderedList,
    ListItem,
-   Badge,
    Image,
 } from '@chakra-ui/react'
 import { MdAdd, MdDelete, MdEdit } from 'react-icons/md'
@@ -32,17 +31,13 @@ import { SiMicrosoftexcel } from 'react-icons/si'
 import { Formik, Form } from 'formik'
 import * as Yup from 'yup'
 import FormikControl from '../../../Formik/FormikControl'
-import ComplaintService from '../../../services/ComplaintService'
+import MachineService from '../../../services/MachineService'
 import useSWR, { mutate } from 'swr'
 import Pagination from '../../../components/Pagination'
 import AlertDialogComponent from '../../../components/AlertDialogComponent'
 import Search from '../../../components/Search'
-import handleApprovedChangeToIND from '../../../helpers/HandleApprovedChangeToIND'
-import { AuthContext } from '../../../contexts/Auth/AuthContext'
-import ModalDetailComplaint from '../../../components/Complaints/ModalDetailComplaint'
 
-const ManageComplaintt = () => {
-   const { userState } = useContext(AuthContext)
+const ManageMachine = () => {
    const toast = useToast()
    const { isOpen, onOpen, onClose } = useDisclosure()
 
@@ -50,112 +45,56 @@ const ManageComplaintt = () => {
    const [pageIndex, setPageIndex] = useState(1)
    const [searchValue, setSearchValue] = useState('')
 
-   const [optionsMachines, setOptionsMachines] = useState([])
-
    useEffect(() => {
       setPageIndex(1)
    }, [searchValue])
 
    const { data } = useSWR(
-      `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&code_complaint=${searchValue}`
+      `/api/machines?page=${pageIndex}&name=${searchValue}&code=${searchValue}`
    )
-
-   const { data: dataMachines } = useSWR(`/api/machines`)
-
-   useEffect(() => {
-      if (dataMachines?.machines?.length) {
-         const getOptionsMachines = dataMachines?.machines?.map(
-            (machine, i) => {
-               return {
-                  key: i,
-                  name: `Kode: ${machine.code} | Nama: ${machine.name}`,
-                  value: machine._id,
-               }
-            }
-         )
-
-         setOptionsMachines(getOptionsMachines)
-      }
-
-      return () => {}
-   }, [dataMachines])
 
    const handlePagination = (page) => {
       setPageIndex(page)
    }
 
    // SECTION FORMIK
-   const [complaintSelected, setComplaintSelected] = useState({})
-   const handleModalOpen = ({ isAdd, complaint }) => {
+   const [machineSelected, setMachineSelected] = useState({})
+   const handleModalOpen = ({ isAdd, machine }) => {
       setIsAdd(isAdd)
-      setComplaintSelected(complaint)
+      setMachineSelected(machine)
       onOpen()
    }
 
    const validationSchema = Yup.object({
-      machine: Yup.string().required('Mesin diperlukan'),
-      complaint: Yup.string().required('Pengaduan diperlukan'),
+      code: Yup.string().required('Kode diperlukan'),
+      name: Yup.string().required('Nama diperlukan'),
    })
-
-   const [photoFile, setPhotoFile] = useState(null)
-   const [photoPrev, setPhotoPrev] = useState('')
-
-   const handlePreviewPhoto = (e) => {
-      const file = e.target.files[0]
-      var t = file.type.split('/').pop().toLowerCase()
-      if (
-         t !== 'jpeg' &&
-         t !== 'jpg' &&
-         t !== 'png' &&
-         t !== 'bmp' &&
-         t !== 'gif'
-      ) {
-         toast({
-            title: 'Gagal',
-            description: 'Gunakan file photo',
-            status: 'error',
-            duration: 3000,
-            isClosable: true,
-            position: 'top-right',
-         })
-         return false
-      }
-      setPhotoFile(file)
-      let reader = new FileReader()
-      reader.onload = () => {
-         const src = reader.result
-         setPhotoPrev(src)
-      }
-
-      reader.readAsDataURL(file)
-   }
-
    const handleSubmitFormik = async (values, actions) => {
       actions.setSubmitting(true)
       try {
-         const reqData = new FormData()
+         if (isAdd) {
+            if (photoPrev === '') throw new Error('Photo diperlukan')
+         }
 
-         reqData.append('photo_damage_machine', photoFile)
-         reqData.append('machine', values.machine)
-         reqData.append('complaint', values.complaint)
+         const reqData = new FormData()
+         reqData.append('photo', photoFile)
+         reqData.append('code', values.code)
+         reqData.append('name', values.name)
 
          if (isAdd) {
-            await ComplaintService.createComplaint(reqData)
+            await MachineService.createMachine(reqData)
          } else {
-            await ComplaintService.updateComplaint(
-               complaintSelected._id,
-               reqData
-            )
+            await MachineService.updateMachine(machineSelected._id, reqData)
          }
          actions.setSubmitting(false)
          mutate(
-            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&code_complaint=${searchValue}`
+            `/api/machines?page=${pageIndex}&name=${searchValue}&code=${searchValue}`
          )
          onClose()
-         setComplaintSelected({})
+         setMachineSelected({})
          toast({
             title: 'Berhasil',
-            description: `berhasil ${isAdd ? 'membuat' : 'mengubah'} pengaduan`,
+            description: `berhasil ${isAdd ? 'membuat' : 'mengubah'} machine`,
             status: 'success',
             duration: 3000,
             isClosable: true,
@@ -172,7 +111,7 @@ const ManageComplaintt = () => {
                            ? item.msg
                            : `tidak berhasil ${
                                 isAdd ? 'membuat' : 'mengubah'
-                             } pengaduan`}
+                             } machine`}
                      </ListItem>
                   ))
                ) : (
@@ -212,16 +151,16 @@ const ManageComplaintt = () => {
    const handleConfirmDelete = async () => {
       setIsLoadingAlert(true)
       try {
-         await ComplaintService.deleteComplaint(idDeleted)
+         await MachineService.deleteMachine(idDeleted)
          mutate(
-            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&code_complaint=${searchValue}`
+            `/api/machines?page=${pageIndex}&name=${searchValue}&code=${searchValue}`
          )
          setIdDeleted(null)
          setIsLoadingAlert(false)
          onCloseAlert()
          toast({
             title: 'Berhasil',
-            description: 'berhasil hapus pengaduan',
+            description: 'berhasil hapus machine',
             status: 'success',
             duration: 2000,
             isClosable: true,
@@ -235,18 +174,18 @@ const ManageComplaintt = () => {
                      <ListItem key={i}>
                         {Object.keys(item.msg).length
                            ? item.msg
-                           : `Tidak berhasil hapus pengaduan`}
+                           : `Tidak berhasil hapus machine`}
                      </ListItem>
                   ))
                ) : (
                   <ListItem>
-                     Tidak berhasil {isAdd ? 'membuat' : 'mengubah'} pengaduan
+                     Tidak berhasil {isAdd ? 'membuat' : 'mengubah'} machine
                   </ListItem>
                )}
             </UnorderedList>
          )
          toast({
-            title: 'Tidak berhasil hapus pengaduan',
+            title: 'Tidak berhasil hapus machine',
             description: renderError,
             status: 'error',
             duration: 3000,
@@ -259,7 +198,7 @@ const ManageComplaintt = () => {
 
    const handleExportToExcel = async () => {
       try {
-         await ComplaintService.sheet('complaint')
+         await MachineService.sheet('machine')
       } catch (error) {
          const renderError = (
             <UnorderedList>
@@ -287,58 +226,52 @@ const ManageComplaintt = () => {
       }
    }
 
-   // Complaint
-   // const {
-   //    isOpen: isOpenDetailComplaint,
-   //    onOpen: onOpenDetailComplaint,
-   //    onClose: onCloseDetailComplaint,
-   // } = useDisclosure()
+   const [photoFile, setPhotoFile] = useState(null)
+   const [photoPrev, setPhotoPrev] = useState('')
 
-   // const [photoComplaint, setPhotoComplaint] = useState('')
-
-   const handleStatusChangeToIND = (status) => {
-      switch (status) {
-         case 'PENDING':
-            return (
-               <Badge variant='solid' colorScheme='yellow'>
-                  Belum Diperbaiki
-               </Badge>
-            )
-         case 'ONGOING':
-            return (
-               <Badge variant='solid' colorScheme='blue'>
-                  Sedang Diperbaiki
-               </Badge>
-            )
-         case 'SUCCESS':
-            return (
-               <Badge variant='solid' colorScheme='green'>
-                  Berhasil Diperbaiki
-               </Badge>
-            )
-         case 'FAILED':
-            return (
-               <Badge variant='solid' colorScheme='red'>
-                  Tidak Berhasil Diperbaiki
-               </Badge>
-            )
-
-         default:
-            return <Badge>Belum Diperbaiki</Badge>
+   const handlePreviewPhoto = (e) => {
+      const file = e.target.files[0]
+      var t = file.type.split('/').pop().toLowerCase()
+      if (
+         t !== 'jpeg' &&
+         t !== 'jpg' &&
+         t !== 'png' &&
+         t !== 'bmp' &&
+         t !== 'gif'
+      ) {
+         toast({
+            title: 'Gagal',
+            description: 'Gunakan file photo',
+            status: 'error',
+            duration: 3000,
+            isClosable: true,
+            position: 'top-right',
+         })
+         return false
       }
+      setPhotoFile(file)
+      let reader = new FileReader()
+      reader.onload = () => {
+         const src = reader.result
+         setPhotoPrev(src)
+      }
+
+      reader.readAsDataURL(file)
    }
 
-   // SECTION DETAIL MODAL COMPLAINT
+   // Machine
+
    const {
-      isOpen: isOpenModalDetailComplaint,
-      onOpen: onOpenModalDetailComplaint,
-      onClose: onCloseModalDetailComplaint,
+      isOpen: isOpenDetailMachine,
+      onOpen: onOpenDetailMachine,
+      onClose: onCloseDetailMachine,
    } = useDisclosure()
 
-   const [selectedComplaint, setSelectedComplaint] = useState({})
-   const handleOpenModalDetailComplaint = (complaint) => {
-      setSelectedComplaint(complaint)
-      onOpenModalDetailComplaint()
+   const [photoMachine, setPhotoMachine] = useState('')
+
+   const handleOpenDetailMachine = (photo) => {
+      setPhotoMachine(photo)
+      onOpenDetailMachine()
    }
 
    return (
@@ -353,7 +286,7 @@ const ManageComplaintt = () => {
                fontSize={['md', 'lg', 'xl', '3xl']}
                color='text'
             >
-               Data Pengaduan
+               Data Mesin
             </Text>
 
             <HStack>
@@ -393,85 +326,56 @@ const ManageComplaintt = () => {
                <Thead>
                   <Tr>
                      <Th>No</Th>
-                     <Th>Kode Pengaduan</Th>
-                     <Th>Mesin</Th>
-                     {/* <Th>Pengaduan</Th> */}
-                     <Th>Waktu</Th>
-                     <Th>Status Perbaikan</Th>
-                     <Th>Pelapor</Th>
-                     <Th>Disetujui</Th>
+                     <Th>Kode Mesin</Th>
+                     <Th>Nama Mesin</Th>
+                     <Th>Photo</Th>
                      <Th textAlign='center'>Action</Th>
                   </Tr>
                </Thead>
                <Tbody>
-                  {data?.complaints?.length ? (
-                     data?.complaints.map((complaint, i) => (
+                  {data?.machines?.length ? (
+                     data?.machines.map((machine, i) => (
                         <Tr key={i}>
                            <Td>{i + 1}</Td>
-                           <Td>{complaint.code_complaint}</Td>
-                           <Td>{complaint.machine.code}</Td>
-                           {/* <Td>{complaint.complaint}</Td> */}
+                           <Td>{machine.code}</Td>
+                           <Td>{machine.name}</Td>
                            <Td>
-                              {new Date(complaint.createdAt).toLocaleDateString(
-                                 'id',
-                                 {
-                                    weekday: 'long',
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
+                              <Image
+                                 src={machine.photo}
+                                 fallbackSrc='https://via.placeholder.com/50'
+                                 w='100px'
+                                 h='50px'
+                                 cursor='pointer'
+                                 onClick={() =>
+                                    handleOpenDetailMachine(machine.photo)
                                  }
-                              )}
+                              />
                            </Td>
-                           <Td>{handleStatusChangeToIND(complaint.status)}</Td>
-                           <Td>{complaint.reporter.name}</Td>
-                           <Td>
-                              {handleApprovedChangeToIND(complaint?.approved)}
-                           </Td>
-
                            <Td textAlign='right'>
-                              <HStack spacing={2} justifyContent='center'>
+                              <HStack spacing={3} justifyContent='center'>
                                  <Button
                                     variant='solid'
-                                    colorScheme='blue'
+                                    colorScheme='yellow'
                                     size='sm'
                                     _focus={{ outline: 'none' }}
                                     onClick={() =>
-                                       handleOpenModalDetailComplaint(complaint)
+                                       handleModalOpen({
+                                          isAdd: false,
+                                          machine,
+                                       })
                                     }
                                  >
-                                    Detail
+                                    <MdEdit size='18px' />
                                  </Button>
-                                 {complaint?.reporter?._id ===
-                                    userState?._id && (
-                                    <>
-                                       <Button
-                                          variant='solid'
-                                          colorScheme='yellow'
-                                          size='sm'
-                                          _focus={{ outline: 'none' }}
-                                          onClick={() =>
-                                             handleModalOpen({
-                                                isAdd: false,
-                                                complaint,
-                                             })
-                                          }
-                                       >
-                                          <MdEdit size='18px' />
-                                       </Button>
-
-                                       <Button
-                                          variant='solid'
-                                          colorScheme='red'
-                                          size='sm'
-                                          onClick={() =>
-                                             handleOpenAlert(complaint._id)
-                                          }
-                                          _focus={{ outline: 'none' }}
-                                       >
-                                          <MdDelete size='18px' />
-                                       </Button>
-                                    </>
-                                 )}
+                                 <Button
+                                    variant='solid'
+                                    colorScheme='red'
+                                    size='sm'
+                                    onClick={() => handleOpenAlert(machine._id)}
+                                    _focus={{ outline: 'none' }}
+                                 >
+                                    <MdDelete size='18px' />
+                                 </Button>
                               </HStack>
                            </Td>
                         </Tr>
@@ -479,7 +383,7 @@ const ManageComplaintt = () => {
                   ) : (
                      <Tr>
                         <Td
-                           colSpan='9'
+                           colSpan='6'
                            bg='yellow.300'
                            color='text'
                            textAlign='center'
@@ -491,7 +395,7 @@ const ManageComplaintt = () => {
                </Tbody>
             </Table>
          </Box>
-         <Box display={data?.complaints?.length ? 'inline' : 'none'}>
+         <Box display={data?.machines?.length ? 'inline' : 'none'}>
             <Pagination
                page={data?.page}
                pages={data?.pages}
@@ -500,7 +404,12 @@ const ManageComplaintt = () => {
          </Box>
 
          {/* Modal add and edit */}
-         <Modal isOpen={isOpen} onClose={onClose} size='lg'>
+         <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            size='xs'
+            onOverlayClick={() => setPhotoPrev('')}
+         >
             <ModalOverlay />
             <ModalContent>
                <ModalHeader>{isAdd ? 'Tambah Data' : 'Ubah Data'}</ModalHeader>
@@ -508,8 +417,9 @@ const ManageComplaintt = () => {
                <ModalBody pb='20px'>
                   <Formik
                      initialValues={{
-                        machine: complaintSelected?.machine?._id || '',
-                        complaint: complaintSelected?.complaint || '',
+                        code: machineSelected?.code || '',
+                        name: machineSelected?.name || '',
+                        // photo: machineSelected?.photo || photoPrev,
                      }}
                      onSubmit={handleSubmitFormik}
                      validationSchema={validationSchema}
@@ -518,33 +428,31 @@ const ManageComplaintt = () => {
                      {(props) => (
                         <Form>
                            <VStack spacing={5}>
-                              <FormikControl
-                                 control='select'
-                                 name='machine'
-                                 label='Mesin'
-                                 color='text'
-                                 options={optionsMachines}
-                                 placeholder='Pilih mesin'
+                              <Image
+                                 src={photoPrev || machineSelected?.photo}
+                                 fallbackSrc='https://via.placeholder.com/150'
                               />
                               <FormikControl
-                                 control='textarea'
-                                 name='complaint'
-                                 label='Pengaduan'
+                                 control='input'
+                                 name='code'
+                                 label='Kode'
                                  color='text'
                               />
-                              {photoPrev && (
-                                 <Image
-                                    src={photoPrev}
-                                    fallbackSrc='https://via.placeholder.com/50'
-                                 />
-                              )}
+                              <FormikControl
+                                 control='input'
+                                 name='name'
+                                 label='Nama'
+                                 color='text'
+                              />
+
                               <FormikControl
                                  control='photo'
-                                 name='photo_kerusakan'
-                                 label='Photo Kerusakan'
+                                 name='photo'
+                                 label='Photo'
                                  color='text'
                                  onChange={handlePreviewPhoto}
                               />
+
                               <Button
                                  alignSelf='flex-end'
                                  variant='solid'
@@ -565,8 +473,8 @@ const ManageComplaintt = () => {
 
          {/* Alert Delete */}
          <AlertDialogComponent
-            header='Hapus complaint'
-            body='Yakin ingin menghapus?'
+            header='Hapus mesin'
+            body='Menghapus mesin akan menghapus seluruh data yang ketergantungan dengan ID ini, Yakin ingin menghapus?'
             isOpen={isOpenAlert}
             onClose={onCloseAlert}
             isLoading={isLoadingAlert}
@@ -574,32 +482,26 @@ const ManageComplaintt = () => {
             handleCloseAlert={handleCloseAlert}
          />
 
-         {/* Detail Complaint */}
-         {/* <Modal
-            isOpen={isOpenDetailComplaint}
-            onClose={onCloseDetailComplaint}
+         {/* Modal Detail Machine */}
+         <Modal
+            isOpen={isOpenDetailMachine}
+            onClose={onCloseDetailMachine}
             size='2xl'
          >
             <ModalOverlay />
             <ModalContent>
-               <ModalHeader>Detail</ModalHeader>
+               <ModalHeader></ModalHeader>
                <ModalCloseButton _focus={{ outline: 'none' }} />
                <ModalBody>
                   <Image
-                     src={photoComplaint}
+                     src={photoMachine}
                      fallbackSrc='https://via.placeholder.com/50'
                   />
                </ModalBody>
             </ModalContent>
-         </Modal> */}
-
-         <ModalDetailComplaint
-            isOpen={isOpenModalDetailComplaint}
-            onClose={onCloseModalDetailComplaint}
-            complaint={selectedComplaint}
-         />
+         </Modal>
       </Box>
    )
 }
 
-export default ManageComplaintt
+export default ManageMachine

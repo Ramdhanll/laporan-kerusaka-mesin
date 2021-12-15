@@ -21,6 +21,11 @@ import {
    useDisclosure,
    Spinner,
    Center,
+   Badge,
+   Input,
+   Select,
+   FormControl,
+   FormLabel,
 } from '@chakra-ui/react'
 
 import useSWR from 'swr'
@@ -32,17 +37,15 @@ const HistoryMaintenance = () => {
    const [pageIndex, setPageIndex] = useState(1)
    const [searchValue, setSearchValue] = useState('')
    const [machineSelected, setMachineSelected] = useState({})
+   const [year, setYear] = useState('')
+   const [month, setMonth] = useState('')
 
    useEffect(() => {
       setPageIndex(1)
    }, [searchValue])
 
-   const { data } = useSWR(
-      `/api/machines?page=${pageIndex}&name=${searchValue}&code=${searchValue}`
-   )
-
    const { data: dataComplaint } = useSWR(
-      `/api/complaints?code=${machineSelected?.code}`
+      `/api/complaints?page=${pageIndex}&code=${searchValue}&year=${year}&month=${month}`
    )
 
    const handlePagination = (page) => {
@@ -75,29 +78,110 @@ const HistoryMaintenance = () => {
       onOpenModalDetailComplaint()
    }
 
+   const handleStatusChangeToIND = (status) => {
+      switch (status) {
+         case 'PENDING':
+            return (
+               <Badge variant='solid' colorScheme='yellow'>
+                  Belum Diperbaiki
+               </Badge>
+            )
+         case 'ONGOING':
+            return (
+               <Badge variant='solid' colorScheme='blue'>
+                  Sedang Diperbaiki
+               </Badge>
+            )
+         case 'SUCCESS':
+            return (
+               <Badge variant='solid' colorScheme='green'>
+                  Berhasil Diperbaiki
+               </Badge>
+            )
+         case 'FAILED':
+            return (
+               <Badge variant='solid' colorScheme='red'>
+                  Tidak Berhasil Diperbaiki
+               </Badge>
+            )
+
+         default:
+            return <Badge>Belum Diperbaiki</Badge>
+      }
+   }
+
+   // handle month
+   const handleChangeMonth = (e) => {
+      setMonth(e)
+   }
+
+   const handleChangeYear = (e) => {
+      setYear(e)
+   }
+
    return (
       <Box>
          <Flex justifyContent='space-between' alignItems='center'>
-            <Text
-               fontWeight='600'
-               fontSize={['md', 'lg', 'xl', '3xl']}
-               color='text'
-            >
-               Riwayat Perbaikan
-            </Text>
-         </Flex>
+            <Box>
+               <Flex justifyContent='space-between' alignItems='center'>
+                  <Text
+                     fontWeight='600'
+                     fontSize={['md', 'lg', 'xl', '3xl']}
+                     color='text'
+                  >
+                     Riwayat Perbaikan
+                  </Text>
+               </Flex>
 
-         <Box mt='20px'>
-            <Search
-               setQuerySearch={setSearchValue}
-               size='sm'
-               borderColor='gray.400'
-               placeholder='Pencarian ...'
-               borderRadius='xl'
-               color='text'
-               px='20px'
-            />
-         </Box>
+               <Box mt='20px'>
+                  <Search
+                     setQuerySearch={setSearchValue}
+                     size='sm'
+                     borderColor='gray.400'
+                     placeholder='Pencarian ...'
+                     borderRadius='xl'
+                     color='text'
+                     px='20px'
+                  />
+               </Box>
+            </Box>
+
+            <Box d='flex' gridGap={3}>
+               <FormControl>
+                  <FormLabel>Pilih Tahun</FormLabel>
+                  <Select
+                     placeholder='All'
+                     onChange={(e) => handleChangeYear(e.target.value)}
+                  >
+                     <option value='2021'>2021</option>
+                     <option value='2020'>2020</option>
+                     <option value='2019'>2019</option>
+                     <option value='2018'>2018</option>
+                  </Select>
+               </FormControl>
+               <FormControl>
+                  <FormLabel>Pilih Bulan</FormLabel>
+                  <Select
+                     placeholder='All'
+                     onChange={(e) => handleChangeMonth(e.target.value)}
+                     w='140px'
+                  >
+                     <option value='0'>Januari</option>
+                     <option value='1'>Februari</option>
+                     <option value='2'>Maret</option>
+                     <option value='3'>April</option>
+                     <option value='4'>Mei</option>
+                     <option value='5'>Juni</option>
+                     <option value='6'>Juli</option>
+                     <option value='7'>Agustus</option>
+                     <option value='8'>September</option>
+                     <option value='9'>Oktober</option>
+                     <option value='10'>November</option>
+                     <option value='11'>Desember</option>
+                  </Select>
+               </FormControl>
+            </Box>
+         </Flex>
          <Box mt='20px' overflow='auto' h='50vh'>
             <Table variant='simple'>
                <TableCaption>CV. BINA ALAM LESTARI</TableCaption>
@@ -106,17 +190,29 @@ const HistoryMaintenance = () => {
                      <Th>No</Th>
                      <Th>Kode Mesin</Th>
                      <Th>Nama Mesin</Th>
+                     <Th>Tanggal Pengaduan</Th>
+                     <Th>Status</Th>
                      <Th textAlign='center'>Action</Th>
                   </Tr>
                </Thead>
                <Tbody>
-                  {data?.machines?.length ? (
-                     data?.machines.map((machine, i) => (
+                  {dataComplaint?.complaints?.length ? (
+                     dataComplaint?.complaints.map((complaint, i) => (
                         <Tr key={i}>
                            <Td>{i + 1}</Td>
-                           <Td>{machine.code}</Td>
-                           <Td>{machine.name}</Td>
-
+                           <Td>{complaint.machine.code}</Td>
+                           <Td>{complaint.machine.name}</Td>
+                           <Td>
+                              {new Date(complaint.createdAt).toLocaleDateString(
+                                 'id',
+                                 {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                 }
+                              )}
+                           </Td>
+                           <Td>{handleStatusChangeToIND(complaint.status)}</Td>
                            <Td textAlign='right'>
                               <HStack spacing={3} justifyContent='center'>
                                  <Button
@@ -125,7 +221,7 @@ const HistoryMaintenance = () => {
                                     size='sm'
                                     _focus={{ outline: 'none' }}
                                     onClick={() =>
-                                       handleOpenDetailMaintenance(machine)
+                                       handleOpenModalDetailComplaint(complaint)
                                     }
                                  >
                                     Detail
@@ -149,10 +245,10 @@ const HistoryMaintenance = () => {
                </Tbody>
             </Table>
          </Box>
-         <Box display={data?.machines?.length ? 'inline' : 'none'}>
+         <Box display={dataComplaint?.complaints?.length ? 'inline' : 'none'}>
             <Pagination
-               page={data?.page}
-               pages={data?.pages}
+               page={dataComplaint?.page}
+               pages={dataComplaint?.pages}
                handlePagination={handlePagination}
             />
          </Box>

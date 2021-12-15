@@ -31,6 +31,12 @@ app.use(
    express.static(path.join(__dirname, '/src/uploads/machines'))
 )
 app.use('/uploads', express.static(path.join(__dirname, '/src/uploads/users')))
+app.use(
+   '/uploads',
+   express.static(path.join(__dirname, '/src/uploads/damages'))
+)
+app.use('/uploads', express.static(path.join(__dirname, '/src/uploads/solves')))
+
 // Setup mongoose database
 Database()
 

@@ -21,6 +21,9 @@ export const getComplaints = async (req, res) => {
    const reporter = req.query.reporter || ''
    const approved = req.query.approved || ''
    const code_complaint = req.query.code_complaint || ''
+   const month = req.query.month !== '' ? req.query.month : ''
+   const year =
+      req.query.year !== '' ? req.query.year : new Date().getFullYear()
 
    const approvedFilter = approved ? { approved } : {}
 
@@ -56,10 +59,29 @@ export const getComplaints = async (req, res) => {
       ? { machine: getIdsMachine }
       : { machine: null }
 
+   console.log('y', year)
+   console.log('m', month)
+
+   // Date filter
+   const dateFilter =
+      year !== '' || month !== ''
+         ? {
+              createdAt: {
+                 $gte: year !== '' ? new Date(year, month) : '',
+                 $lte:
+                    month !== ''
+                       ? new Date(year, Number(month) + 1)
+                       : new Date(year, 12),
+              },
+           }
+         : {}
+   console.log(dateFilter)
+
    try {
       const count = await Complaints.countDocuments({
          $and: [
             approvedFilter,
+            dateFilter,
             {
                $or: [
                   filterIdsMachine,
@@ -70,17 +92,12 @@ export const getComplaints = async (req, res) => {
                ],
             },
          ],
-
-         // $or: [
-         //    filterIdsMachine,
-         //    complaintFilter,
-         //    filterIdsUsers,
-         // ],
       })
 
       const complaints = await Complaints.find({
          $and: [
             approvedFilter,
+            dateFilter,
             {
                $or: [
                   filterIdsMachine,
@@ -107,8 +124,10 @@ export const getComplaints = async (req, res) => {
          complaints,
          page,
          pages: Math.ceil(count / pageSize),
+         length: count,
       })
    } catch (error) {
+      // console.log(error)
       res.status(500).json({ message: 'Server down!', error })
    }
 }
@@ -119,14 +138,23 @@ export const createComplaint = async (req, res) => {
       return res.status(400).json({ errors: errors.array() })
    }
 
-   const { machine, complaint } = req.body
+   const { machine, complaint, ...data } = req.body
 
    try {
       if (!machine) throw 'Mesin diperlukan'
       if (!complaint) throw 'Pengaduan diperlukan'
 
+      if (req.files.photo_damage_machine)
+         data.photo_damage_machine = `http://localhost:5000/uploads/${req.files.photo_damage_machine[0].filename}`
+
+      if (req.files.photo_solve_machine)
+         data.photo_solve_machine = `http://localhost:5000/uploads/${req.files.photo_solve_machine[0].filename}`
+
+      console.log(machine, complaint)
       const dataComplaint = {
-         ...req.body,
+         ...data,
+         machine,
+         complaint,
          code_complaint: createIdComplaint(),
          reporter: req.user._id,
          status: 'PENDING',
@@ -144,6 +172,7 @@ export const createComplaint = async (req, res) => {
          message: 'Complaint has been created',
       })
    } catch (error) {
+      console.log(error)
       res.status(500).json({
          status: 'error',
          errors: [{ msg: error?.name === 'CastError' ? error.message : error }],
@@ -157,6 +186,8 @@ export const updateComplaint = async (req, res) => {
    if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() })
    }
+   let photo_damage_machine
+   let photo_solve_machine
 
    const {
       machine,
@@ -172,6 +203,12 @@ export const updateComplaint = async (req, res) => {
       if (!machine) throw 'Mesin diperlukan'
       if (!complaint) throw 'Pengaduan diperlukan'
 
+      if (req.files.photo_damage_machine)
+         photo_damage_machine = `http://localhost:5000/uploads/${req.files.photo_damage_machine[0].filename}`
+
+      if (req.files.photo_solve_machine)
+         photo_solve_machine = `http://localhost:5000/uploads/${req.files.photo_solve_machine[0].filename}`
+
       const getComplaint = await Complaints.findById(req.params.id)
 
       getComplaint.complaint = complaint ?? getComplaint.complaint
@@ -182,6 +219,10 @@ export const updateComplaint = async (req, res) => {
       getComplaint.mechanical = mechanical ?? getComplaint.mechanical
       getComplaint.note_mechanical =
          note_mechanical ?? getComplaint.note_mechanical
+      getComplaint.photo_damage_machine =
+         photo_damage_machine ?? getComplaint.photo_damage_machine
+      getComplaint.photo_solve_machine =
+         photo_solve_machine ?? getComplaint.photo_solve_machine
 
       const updatedComplaint = await getComplaint.save()
 

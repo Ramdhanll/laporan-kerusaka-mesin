@@ -187,51 +187,51 @@ const ManageComplaint = () => {
       }
    }
 
-   const handleWorkon = async (complaint) => {
-      try {
-         await ComplaintService.updateComplaint(complaint._id, {
-            ...complaint,
-            mechanical: userState?._id,
-         })
+   // const handleWorkon = async (complaint) => {
+   //    try {
+   //       await ComplaintService.updateComplaint(complaint._id, {
+   //          ...complaint,
+   //          mechanical: userState?._id,
+   //       })
 
-         mutate(
-            `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&code_complaint=${searchValue}`
-         )
-         onClose()
-         toast({
-            title: 'Berhasil',
-            description: `berhasil memilih`,
-            status: 'success',
-            duration: 3000,
-            isClosable: true,
-            position: 'top-right',
-         })
-      } catch (error) {
-         const renderError = (
-            <UnorderedList>
-               {error?.response?.data?.errors?.length ? (
-                  error.response.data.errors.map((item, i) => (
-                     <ListItem key={i}>
-                        {Object.keys(item.msg).length
-                           ? item.msg
-                           : `tidak berhasil memilih`}
-                     </ListItem>
-                  ))
-               ) : (
-                  <ListItem>{error.message}</ListItem>
-               )}
-            </UnorderedList>
-         )
-         toast({
-            title: 'Tidak Berhasil',
-            description: renderError,
-            status: 'error',
-            duration: 3000,
-            isClosable: true,
-            position: 'top-right',
-         })
-      }
-   }
+   //       mutate(
+   //          `/api/complaints?page=${pageIndex}&complaint=${searchValue}&code=${searchValue}&reporter=${searchValue}&code_complaint=${searchValue}`
+   //       )
+   //       onClose()
+   //       toast({
+   //          title: 'Berhasil',
+   //          description: `berhasil memilih`,
+   //          status: 'success',
+   //          duration: 3000,
+   //          isClosable: true,
+   //          position: 'top-right',
+   //       })
+   //    } catch (error) {
+   //       const renderError = (
+   //          <UnorderedList>
+   //             {error?.response?.data?.errors?.length ? (
+   //                error.response.data.errors.map((item, i) => (
+   //                   <ListItem key={i}>
+   //                      {Object.keys(item.msg).length
+   //                         ? item.msg
+   //                         : `tidak berhasil memilih`}
+   //                   </ListItem>
+   //                ))
+   //             ) : (
+   //                <ListItem>{error.message}</ListItem>
+   //             )}
+   //          </UnorderedList>
+   //       )
+   //       toast({
+   //          title: 'Tidak Berhasil',
+   //          description: renderError,
+   //          status: 'error',
+   //          duration: 3000,
+   //          isClosable: true,
+   //          position: 'top-right',
+   //       })
+   //    }
+   // }
 
    // SECTION DETAIL MODAL COMPLAINT
    const {

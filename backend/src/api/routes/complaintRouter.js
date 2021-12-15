@@ -12,18 +12,46 @@ import { body } from 'express-validator'
 import { isAdmin, isAuth } from '../middleware/jwt.js'
 const complaintRouter = express.Router()
 
+import fs from 'fs'
+import path from 'path'
+const __dirname = path.resolve()
+
+import multer from 'multer'
+
+const storage = multer.diskStorage({
+   destination(req, file, cb) {
+      // Cek apakah folder downloadnya ada
+      const downloadFolder = path.resolve(__dirname, './src/uploads/damages')
+      if (!fs.existsSync(downloadFolder)) {
+         fs.mkdirSync(downloadFolder)
+      }
+      cb(null, `src/uploads/damages`)
+   },
+   filename(req, file, cb) {
+      const { originalname } = file
+      const format = originalname.slice(originalname.indexOf('.'))
+      cb(null, `${Date.now()}${format}`)
+   },
+})
+
+const uploadMulter = multer({ storage })
+
 complaintRouter.get('/', getComplaints)
 complaintRouter.post(
    '/',
-   body('machine').notEmpty().withMessage('Mesin diperlukan!'),
-   body('complaint').notEmpty().withMessage('Pengaduan diperlukan!'),
    isAuth,
+   uploadMulter.fields([
+      { name: 'photo_damage_machine' },
+      { name: 'photo_solve_machine' },
+   ]),
    createComplaint
 )
 complaintRouter.put(
    '/:id',
-   body('machine').notEmpty().withMessage('Mesin diperlukan!'),
-   body('complaint').notEmpty().withMessage('Pengaduan diperlukan!'),
+   uploadMulter.fields([
+      { name: 'photo_damage_machine' },
+      { name: 'photo_solve_machine' },
+   ]),
    isAuth,
    updateComplaint
 )

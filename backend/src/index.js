@@ -46,9 +46,14 @@ app.use('/api/users', userRouter)
 app.use('/api/machines', machineRouter)
 app.use('/api/complaints', complaintRouter)
 
-app.use('/', (req, res) => {
-   res.send('Server is on!')
-})
+// SWAGGER
+import swaggerUI from 'swagger-ui-express'
+import apiDocs from './apiDocs.json'
+app.use('/', swaggerUI.serve, swaggerUI.setup(apiDocs))
+
+// app.use('/', (req, res) => {
+//    res.send('Server is on!')
+// })
 
 app.use((err, req, res, next) => {
    // this method from express-async-handler to handle error

@@ -1,0 +1,125 @@
+{
+   "openapi": "3.0.0",
+   "info": {
+      "title": "API LAPORAN KERUSAKAN MESIN",
+      "description": "Daftar api laporan kerusakan mesin PT. XYZ",
+      "version": "1.0.0"
+   },
+   "_servers": [
+      {
+         "url": "http://localhost:5000",
+         "description": "localhost"
+      }
+   ],
+   "tags": [
+      {
+         "name": "Authentication",
+         "description": "authentikasi untuk user melakukan login atau lupa password"
+      },
+      {
+         "name": "Users",
+         "description": "api untuk melakukan CRUD data users"
+      },
+      {
+         "name": "Machines",
+         "description": "api untuk melakukan CRUD data mesin"
+      },
+      {
+         "name": "Complaints",
+         "description": "api untuk melakukan CRUD pengaduan"
+      }
+   ],
+   "paths": {
+      "/api/auth/login": {
+         "post": {
+            "tags": ["Authentication"],
+            "summary": "lakukan login",
+            "description": "sdsdsdsd",
+            "responses": {
+               "200": {
+                  "description": "Success",
+                  "schema": {
+                     "$ref": "#/definitions/Machines"
+                  }
+               }
+            }
+         }
+      },
+      "/api/machines": {
+         "get": {
+            "tags": ["Machines"],
+            "summary": "Get all machines",
+            "description": "ambil semua data mesin",
+            "produces": "application/json",
+            "responses": {
+               "200": {
+                  "description": "successful operation",
+                  "schema": {
+                     "type": "object",
+                     "additionalProperties": {
+                        "type": "integer",
+                        "format": "int32"
+                     }
+                  }
+               }
+            }
+         },
+         "post": {
+            "tags": ["Machines"],
+            "summary": "Create machine",
+            "description": "This can only be done by the logged in user.",
+            "operationId": "createMachine",
+            "consumes": ["multipart/form-data"],
+            "requestBody": {
+               "content": {
+                  "multipart/form-data": {
+                     "schema": {
+                        "type": "object",
+                        "properties": {
+                           "code": {
+                              "type": "string",
+                              "required": true
+                           },
+                           "name": {
+                              "type": "string"
+                           },
+                           "photo": {
+                              "type": "string",
+                              "format": "binary"
+                           }
+                        }
+                     }
+                  }
+               }
+            },
+            "responses": {
+               "default": {
+                  "description": "successful operation"
+               }
+            }
+         }
+      }
+   },
+   "definitions": {
+      "Machines": {
+         "type": "object",
+         "properties": {
+            "_id": {
+               "type": "string"
+            },
+            "code": {
+               "type": "string"
+            },
+            "name": {
+               "type": "string"
+            },
+            "photo": {
+               "type": "string"
+            }
+         },
+         "xml": {
+            "name": "Order"
+         }
+      }
+   }
+}
